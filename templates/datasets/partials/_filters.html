@@ -1,0 +1,2 @@
+{% url 'dataset-compare' as dataset_compare_url %}
+{% include "components/filter_panel.html" with action=dataset_compare_url target="#compare-content" swap="innerHTML" fields=filter_fields %}

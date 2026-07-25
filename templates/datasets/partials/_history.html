@@ -1,0 +1,123 @@
+{% load ui_tags %}
+{% status_badge_classes "positive" as positive_badge %}
+{% status_badge_classes "warning" as warning_badge %}
+{% status_badge_classes "danger" as danger_badge %}
+{% status_badge_classes "neutral" as neutral_badge %}
+<div id="dataset-history-content">
+
+<section class="mb-8">
+    <h2 class="text-lg font-medium mb-3 text-gray-800">Current Active Dataset</h2>
+    {% if active_version %}
+        <div class="{% card_classes %}">
+            <div class="flex flex-wrap justify-between items-start gap-2 mb-2">
+                <div>
+                    <p class="font-medium">{{ active_version.version_name }}</p>
+                    <p class="text-sm text-gray-500">
+                        imported {{ active_version.imported_at|date:"M j, Y H:i" }}
+                        {% if active_version.imported_by %} by {{ active_version.imported_by.username }}{% endif %}
+                    </p>
+                </div>
+                {% include "components/badge.html" with text="Active" classes=positive_badge %}
+            </div>
+            <div class="grid gap-3 sm:grid-cols-3 lg:grid-cols-6 text-sm mt-3">
+                <div><p class="text-gray-500 text-xs">Subjects</p><p class="font-medium">{{ active_version.statistics.subject_count }}</p></div>
+                <div><p class="text-gray-500 text-xs">Chapters</p><p class="font-medium">{{ active_version.statistics.chapter_count }}</p></div>
+                <div><p class="text-gray-500 text-xs">Lectures</p><p class="font-medium">{{ active_version.statistics.lecture_count }}</p></div>
+                <div><p class="text-gray-500 text-xs">Topics</p><p class="font-medium">{{ active_version.statistics.lecture_topic_count }}</p></div>
+                <div><p class="text-gray-500 text-xs">Exams</p><p class="font-medium">{{ active_version.statistics.exam_count }}</p></div>
+                <div><p class="text-gray-500 text-xs">Routine Events</p><p class="font-medium">{{ active_version.statistics.routine_event_count }}</p></div>
+            </div>
+            <p class="text-xs text-gray-400 mt-3">checksum {{ active_version.checksum|slice:":16" }}&hellip;</p>
+        </div>
+    {% else %}
+        {% include "components/empty_state.html" with message="No dataset has been imported yet. Run import_csv to get started." %}
+    {% endif %}
+</section>
+
+<section class="mb-8">
+    <h2 class="text-lg font-medium mb-3 text-gray-800">Dataset Versions</h2>
+    <div class="overflow-x-auto">
+        <table class="w-full bg-white border border-gray-200 rounded-lg text-sm">
+            <caption class="sr-only">All imported dataset versions</caption>
+            <thead>
+                <tr class="text-left border-b bg-gray-50">
+                    <th class="p-2" scope="col">Version</th>
+                    <th class="p-2" scope="col">Imported</th>
+                    <th class="p-2" scope="col">By</th>
+                    <th class="p-2" scope="col">Topics</th>
+                    <th class="p-2" scope="col">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for version in versions %}
+                    <tr class="border-b last:border-0 hover:bg-gray-50">
+                        <td class="p-2">{{ version.version_name }}</td>
+                        <td class="p-2 whitespace-nowrap">{{ version.imported_at|date:"M j, Y H:i" }}</td>
+                        <td class="p-2">{{ version.imported_by.username|default:"—" }}</td>
+                        <td class="p-2">{{ version.statistics.lecture_topic_count|default:"—" }}</td>
+                        <td class="p-2">
+                            {% if version.is_active %}
+                                {% include "components/badge.html" with text="Active" classes=positive_badge %}
+                            {% else %}
+                                <span class="text-gray-400 text-xs">Inactive</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5" class="p-0">
+                            {% include "components/empty_state.html" with message="No dataset versions yet." %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section>
+    <h2 class="text-lg font-medium mb-3 text-gray-800">Import History</h2>
+    <div class="overflow-x-auto">
+        <table class="w-full bg-white border border-gray-200 rounded-lg text-sm">
+            <caption class="sr-only">Every import_csv run, including previews, dry runs, and rollbacks</caption>
+            <thead>
+                <tr class="text-left border-b bg-gray-50">
+                    <th class="p-2" scope="col">Started</th>
+                    <th class="p-2" scope="col">Status</th>
+                    <th class="p-2" scope="col">User</th>
+                    <th class="p-2" scope="col">Duration</th>
+                    <th class="p-2" scope="col">Version</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in import_logs %}
+                    <tr class="border-b last:border-0 hover:bg-gray-50">
+                        <td class="p-2 whitespace-nowrap">{{ log.started_at|date:"M j, Y H:i" }}</td>
+                        <td class="p-2">
+                            {% if log.status == 'success' %}
+                                {% include "components/badge.html" with text=log.get_status_display classes=positive_badge %}
+                            {% elif log.status == 'failed' %}
+                                {% include "components/badge.html" with text=log.get_status_display classes=danger_badge %}
+                            {% elif log.status == 'rollback' %}
+                                {% include "components/badge.html" with text=log.get_status_display classes=warning_badge %}
+                            {% else %}
+                                {% include "components/badge.html" with text=log.get_status_display classes=neutral_badge %}
+                            {% endif %}
+                        </td>
+                        <td class="p-2">{{ log.user.username|default:"—" }}</td>
+                        <td class="p-2">{{ log.duration_seconds|floatformat:2 }}s</td>
+                        <td class="p-2">{{ log.dataset_version.version_name|default:"—" }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5" class="p-0">
+                            {% include "components/empty_state.html" with message="No imports recorded yet." %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+</div>

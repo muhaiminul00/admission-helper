@@ -1,0 +1,25 @@
+{% comment %} Component: theme_toggle — the Light/Dark/System appearance
+   selector (Milestone 15.1, Phase 9; moved inside the header's User
+   Menu/mobile menu in Milestone 15.2, Part 1). A native <select>
+   rather than a custom dropdown widget: fully keyboard-accessible
+   with no extra markup/JS (Phase 11), and reads naturally as three
+   fixed choices. `window.setTheme()` (defined in base.html's <head>
+   script, before this renders) persists the choice to localStorage
+   and applies it immediately - no database field, no server
+   round-trip.
+   Context vars: id (optional, default "theme-select") - since the
+   header now includes this component more than once (desktop User
+   Menu + mobile menu), each instance needs its own element id to stay
+   valid HTML and independently syncable. {% endcomment %}
+{% with select_id=id|default:"theme-select" %}
+<label for="{{ select_id }}" class="sr-only">Theme</label>
+<select id="{{ select_id }}" onchange="setTheme(this.value)"
+        class="shrink-0 bg-slate-800 dark:bg-slate-900 text-white text-sm rounded px-2 py-1.5 border border-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
+    <option value="system">System</option>
+    <option value="light">Light</option>
+    <option value="dark">Dark</option>
+</select>
+<script>
+    document.getElementById("{{ select_id }}").value = localStorage.getItem("theme") || "system";
+</script>
+{% endwith %}

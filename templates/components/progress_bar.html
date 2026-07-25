@@ -1,0 +1,14 @@
+{% comment %} Component: progress_bar — a completion bar. Context vars:
+   percentage (required, 0-100), width_class (optional, default
+   "w-full" - use e.g. "w-24"/"w-32" for inline table-cell bars),
+   size ("sm" = h-2, default "md" = h-3), color_class (optional,
+   default "bg-emerald-600"), show_label (optional bool - renders
+   "{{ percentage }}%" beside the bar). {% endcomment %}
+<div class="flex items-center gap-2">
+    <div class="{{ width_class|default:'w-full' }} bg-gray-200 dark:bg-slate-700 rounded {% if size == 'sm' %}h-2{% else %}h-3{% endif %}"
+         role="progressbar" aria-valuenow="{{ percentage }}" aria-valuemin="0" aria-valuemax="100">
+        <div class="{{ color_class|default:'bg-emerald-600' }} {% if size == 'sm' %}h-2{% else %}h-3{% endif %} rounded"
+             style="width: {{ percentage }}%"></div>
+    </div>
+    {% if show_label %}<span class="text-gray-500 dark:text-gray-400 text-xs whitespace-nowrap">{{ percentage }}%</span>{% endif %}
+</div>

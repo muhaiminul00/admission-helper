@@ -1,0 +1,26 @@
+{% extends "emails/base.html" %}
+{% block subject %}Routine Week {{ week_number }} — What's Ahead{% endblock %}
+{% block content %}
+<h1 style="font-size:20px;margin:0 0 4px;">Routine Week {{ week_number }}</h1>
+<p style="margin:0 0 16px;color:#4b5563;">{{ monday|date:"M j" }} – {{ sunday|date:"M j, Y" }}</p>
+
+<p style="margin:0 0 16px;">
+{{ lecture_count }} lecture{{ lecture_count|pluralize }} &middot;
+{{ exam_count }} exam{{ exam_count|pluralize }} &middot;
+{{ revision_count }} revision{{ revision_count|pluralize }} due
+</p>
+
+{% for day in days %}
+<div style="padding:10px 0;border-top:1px solid #e5e7eb;">
+<strong>{{ day.date|date:"l, M j" }}</strong>
+{% if day.lectures or day.exams %}
+<ul style="margin:6px 0 0;padding-left:20px;">
+{% for lecture in day.lectures %}<li>{{ lecture.subject.name }} — {{ lecture.title|default:lecture.lecture_code }}</li>{% endfor %}
+{% for exam in day.exams %}<li style="color:#b45309;font-weight:600;">{{ exam.get_exam_type_display }} Exam — {{ exam.exam_name }}</li>{% endfor %}
+</ul>
+{% else %}
+<p style="margin:6px 0 0;color:#9ca3af;">Free</p>
+{% endif %}
+</div>
+{% endfor %}
+{% endblock %}

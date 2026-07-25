@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}{{ schedule.lecture.lecture_code }} - {{ schedule.get_revision_level_display }} - Admission Helper{% endblock %}
+
+{% block content %}
+<a href="{% url 'revision-queue' %}" class="text-sm text-blue-600 hover:underline">&larr; Back to Revision Queue</a>
+
+<div id="revision-detail" class="mt-2">
+    {% include "revision/partials/_detail_content.html" %}
+</div>
+{% endblock %}

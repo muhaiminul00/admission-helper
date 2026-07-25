@@ -1,0 +1,66 @@
+{% load ui_tags %}
+{% status_badge_classes "positive" as positive_badge %}
+{% status_badge_classes "warning" as warning_badge %}
+<div class="flex flex-wrap justify-between items-start gap-2 mb-1">
+    <h1 class="text-2xl font-semibold text-gray-900">{{ schedule.lecture.lecture_code }} &mdash; {{ schedule.get_revision_level_display }}</h1>
+    {% if is_exam_ready %}
+        {% include "components/badge.html" with text="Exam Ready" classes=positive_badge %}
+    {% endif %}
+</div>
+<p class="text-gray-600 mb-6">
+    {{ schedule.lecture.subject.name }} &middot; {{ schedule.lecture.title|default:schedule.lecture.lecture_code }} &middot;
+    due {{ schedule.due_date }}
+</p>
+
+<section class="mb-6 grid gap-4 sm:grid-cols-2">
+    <div class="{% card_classes %}">
+        <h2 class="text-lg font-medium mb-2 text-gray-800">Status</h2>
+        {% if schedule.status == "completed" %}
+            {% include "components/badge.html" with text="Completed" secondary=schedule.completed_at|date:"M j, Y H:i" classes=positive_badge %}
+        {% else %}
+            {% include "components/badge.html" with text="Pending" classes=warning_badge %}
+            <button type="button"
+                    hx-post="{% url 'revision-complete' schedule.pk %}"
+                    hx-target="#revision-detail"
+                    hx-swap="innerHTML"
+                    hx-indicator="#page-indicator"
+                    class="ml-3 text-sm border border-gray-300 rounded px-3 py-1.5 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+                Mark Complete
+            </button>
+        {% endif %}
+    </div>
+    <div class="{% card_classes %}">
+        <h2 class="text-lg font-medium mb-2 text-gray-800">Related Topics</h2>
+        <p class="text-sm text-gray-600">{{ topics|length }} topic{{ topics|length|pluralize }} in this lecture</p>
+    </div>
+</section>
+
+<section class="mb-6">
+    <h2 class="text-lg font-medium mb-2 text-gray-800">Topics</h2>
+    <ul class="bg-white border border-gray-200 rounded-lg divide-y text-sm">
+        {% for topic in topics %}
+            <li class="p-2 hover:bg-gray-50">
+                {{ topic.topic }}
+                {% if topic.chapter %}
+                    <span class="text-gray-400 text-xs"> &middot; {{ topic.chapter.get_paper_display }} Ch. {{ topic.chapter.chapter_no }}</span>
+                {% endif %}
+            </li>
+        {% empty %}
+            <li>{% include "components/empty_state.html" with message="No topics recorded for this lecture." %}</li>
+        {% endfor %}
+    </ul>
+</section>
+
+<section>
+    <h2 class="text-lg font-medium mb-2 text-gray-800">Revision History</h2>
+    <ul class="bg-white border border-gray-200 rounded-lg divide-y text-sm">
+        {% for entry in history %}
+            <li class="p-3 hover:bg-gray-50">
+                <span class="text-gray-600">Completed {{ entry.completed_at|date:"M j, Y H:i" }}</span>
+                {% if entry.notes %}<p class="text-gray-500 text-xs mt-1">{{ entry.notes }}</p>{% endif %}
+            </li>
+        {% empty %}
+            <li>{% include "components/empty_state.html" with message="Not completed yet - history appears here once you mark it complete." %}</li>
+        {% endfor %}
+    </ul>
+</section>

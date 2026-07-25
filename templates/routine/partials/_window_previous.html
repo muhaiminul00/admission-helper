@@ -1,0 +1,9 @@
+{% if has_more_previous %}
+    <div id="prev-sentinel"
+         hx-get="{% url 'routine-timeline-window' %}?direction=previous&before={{ oldest_date }}&subject={{ selected_subject }}&completed={{ selected_completed }}"
+         hx-trigger="revealed"
+         hx-swap="outerHTML"
+         hx-target="this"
+         class="text-center text-xs text-gray-400 py-3">Loading earlier lectures&hellip;</div>
+{% endif %}
+{% include "routine/partials/_timeline_body.html" %}

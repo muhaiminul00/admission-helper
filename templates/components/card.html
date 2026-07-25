@@ -1,0 +1,10 @@
+{% comment %} Component: card — a generic bordered box wrapping arbitrary content.
+   Django templates have no "slot" mechanism for {% include %}, so the
+   inner content is itself a template name passed as content_template;
+   the calling context (whatever variables the parent template already
+   has in scope) is visible to it same as any {% include %}.
+   Context vars: content_template (required - a template path),
+   padding (optional, default "p-4"), extra_classes (optional). {% endcomment %}
+<div class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg {{ padding|default:'p-4' }} {{ extra_classes }}">
+    {% include content_template %}
+</div>

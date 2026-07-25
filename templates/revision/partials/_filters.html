@@ -1,0 +1,2 @@
+{% url 'revision-queue' as revision_queue_url %}
+{% include "components/filter_panel.html" with action=revision_queue_url target="#queue-content" swap="innerHTML" fields=filter_fields %}

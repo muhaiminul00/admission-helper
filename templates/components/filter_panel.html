@@ -1,0 +1,22 @@
+{% comment %} Component: filter_panel — a full HTMX auto-submit filter form,
+   composed from select_field.html/text_field.html. Context vars:
+   action (required, hx-get URL), target (required, hx-target),
+   swap (optional), extra_trigger (optional, e.g. a debounced search),
+   fields (required - list of dicts, each either
+     {"kind": "select", "name", "label", "options": [(value,label),...], "selected"}
+   or
+     {"kind": "text", "name", "label", "value", "placeholder"}
+   ). Used wherever a page's filter fields are simple enough to build
+   as a plain list in the view; pages with more bespoke filter needs
+   compose select_field.html/text_field.html directly instead (see
+   PROJECT_PROGRESS.md, Milestone 11, for which pages use which). {% endcomment %}
+<form class="mb-4 flex flex-wrap gap-3 items-end"
+      {% include "components/_filter_form_attrs.html" with action=action target=target swap=swap extra_trigger=extra_trigger %}>
+    {% for f in fields %}
+        {% if f.kind == "text" %}
+            {% include "components/text_field.html" with name=f.name label=f.label value=f.value placeholder=f.placeholder %}
+        {% else %}
+            {% include "components/select_field.html" with name=f.name label=f.label options=f.options selected=f.selected %}
+        {% endif %}
+    {% endfor %}
+</form>

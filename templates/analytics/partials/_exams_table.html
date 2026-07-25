@@ -1,0 +1,43 @@
+<div class="overflow-x-auto">
+    <table class="w-full bg-white border border-gray-200 rounded-lg text-sm">
+        <caption class="sr-only">Exam readiness analytics</caption>
+        <thead>
+            <tr class="text-left border-b bg-gray-50">
+                <th class="p-2" scope="col">Title</th>
+                <th class="p-2" scope="col">Date</th>
+                <th class="p-2" scope="col">Covered Lectures</th>
+                <th class="p-2" scope="col">Covered Topics</th>
+                <th class="p-2" scope="col">Completed</th>
+                <th class="p-2" scope="col">Remaining</th>
+                <th class="p-2" scope="col">Exam Ready</th>
+                <th class="p-2" scope="col">Readiness</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+                <tr class="border-b last:border-0 hover:bg-gray-50">
+                    <td class="p-2">
+                        <a href="{% url 'exam-detail' row.exam.pk %}" class="text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
+                            {{ row.exam.exam_name }}
+                        </a>
+                    </td>
+                    <td class="p-2 whitespace-nowrap">{{ row.exam.exam_date }}</td>
+                    <td class="p-2">{{ row.covered_lecture_count }}</td>
+                    <td class="p-2">{{ row.total_topics }}</td>
+                    <td class="p-2">{{ row.completed_topics }}</td>
+                    <td class="p-2">{{ row.remaining_topics }}</td>
+                    <td class="p-2">{{ row.exam_ready_lecture_count }}/{{ row.covered_lecture_count }}</td>
+                    <td class="p-2">
+                        {% include "components/badge.html" with text=row.readiness_label secondary=row.percentage|stringformat:"s"|add:"%" classes=row.readiness_badge_class %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="8" class="p-0">
+                        {% include "components/empty_state.html" with message="No exams found yet - import a dataset to get started." %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

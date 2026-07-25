@@ -1,0 +1,28 @@
+{% comment %} Shared across Routine/Exam/Revision workspace pages
+   (Milestone 10.5, labels made context-aware in Milestone 12): a
+   floating jump-to-anchor button. Expects a #today-marker element
+   somewhere on the page to scroll to - if none exists (nothing to
+   anchor on), the button no-ops. Scroll-position memory itself lives
+   in base.html now (Milestone 12, Phase 8 - generalized to every
+   page, not just these three) so this partial only owns the button
+   and the "clicking it recenters" behavior.
+   Context vars: label (optional, default "Today"). {% endcomment %}
+<button id="jump-today-fab" type="button"
+        class="fixed bottom-6 right-6 z-20 px-4 py-2 rounded-full shadow-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300">
+    {{ label|default:"Today" }}
+</button>
+<script>
+(function () {
+    var fab = document.getElementById("jump-today-fab");
+    if (!fab) return;
+    var STORAGE_KEY = "scrollPosition:" + window.location.pathname + window.location.search;
+
+    fab.addEventListener("click", function () {
+        var marker = document.getElementById("today-marker");
+        if (marker) {
+            marker.scrollIntoView({block: "center", behavior: "smooth"});
+        }
+        sessionStorage.removeItem(STORAGE_KEY);
+    });
+})();
+</script>

@@ -1,0 +1,7 @@
+{% extends "emails/base.html" %}
+{% block subject %}{{ subject }}{% endblock %}
+{% block content %}
+<h1 style="font-size:20px;margin:0 0 8px;">{{ subject }}</h1>
+<p style="margin:0 0 8px;">This is a test email from Admission Helper, sent {{ sent_at|date:"l, F j, Y H:i" }}.</p>
+<p style="margin:0;color:#4b5563;">If you received this, your email configuration is working correctly.</p>
+{% endblock %}

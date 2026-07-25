@@ -1,0 +1,12 @@
+{% comment %} Internal helper for components/filter_panel.html and any hand-built
+   filter <form> - centralizes the HTMX attribute set every filter form
+   in the app shares (auto-submit on change, push URL, loading bar).
+   Context vars: action (required, hx-get URL), target (required),
+   swap (optional, default "innerHTML"), extra_trigger (optional -
+   additional hx-trigger clause, e.g. a debounced search input). {% endcomment %}
+hx-get="{{ action }}"
+hx-target="{{ target }}"
+hx-swap="{{ swap|default:'innerHTML' }}"
+hx-push-url="true"
+hx-indicator="#page-indicator"
+hx-trigger="change{% if extra_trigger %}, {{ extra_trigger }}{% endif %}"

@@ -1,0 +1,42 @@
+<div class="overflow-x-auto">
+    <table class="w-full bg-white border border-gray-200 rounded-lg text-sm">
+        <caption class="sr-only">Chapter completion analytics</caption>
+        <thead>
+            <tr class="text-left border-b bg-gray-50">
+                <th class="p-2" scope="col">Subject</th>
+                <th class="p-2" scope="col">Paper</th>
+                <th class="p-2" scope="col">Chapter</th>
+                <th class="p-2" scope="col">Topics</th>
+                <th class="p-2" scope="col">Completed</th>
+                <th class="p-2" scope="col">Remaining</th>
+                <th class="p-2" scope="col">Completion</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in page_obj %}
+                <tr class="border-b last:border-0 hover:bg-gray-50">
+                    <td class="p-2">
+                        <a href="{% url 'subject-detail' row.chapter.subject.pk %}" class="text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">{{ row.chapter.subject.name }}</a>
+                    </td>
+                    <td class="p-2">{{ row.chapter.get_paper_display }}</td>
+                    <td class="p-2">
+                        <a href="{% url 'chapter-detail' row.chapter.pk %}" class="text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">Ch. {{ row.chapter.chapter_no }} &mdash; {{ row.chapter.name }}</a>
+                    </td>
+                    <td class="p-2">{{ row.total }}</td>
+                    <td class="p-2">{{ row.completed }}</td>
+                    <td class="p-2">{{ row.remaining }}</td>
+                    <td class="p-2 w-40">
+                        {% include "components/progress_meter.html" with progress=row.progress size="sm" %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="7" class="p-0">
+                        {% include "components/empty_state.html" with message="No chapters match these filters." %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% include "analytics/partials/_pagination.html" with target="#chapter-results" %}

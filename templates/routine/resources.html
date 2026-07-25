@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Routine Resources - Admission Helper{% endblock %}
+
+{% block content %}
+{% include "components/page_header.html" with title="Routine Resources" subtitle="View and download official routine documents." %}
+
+<div id="routine-archive-viewer">
+    {% include "routine/partials/_resources_viewer.html" %}
+</div>
+{% endblock %}

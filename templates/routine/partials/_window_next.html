@@ -1,0 +1,9 @@
+{% include "routine/partials/_timeline_body.html" %}
+{% if has_more_next %}
+    <div id="next-sentinel"
+         hx-get="{% url 'routine-timeline-window' %}?direction=next&after={{ newest_date }}&subject={{ selected_subject }}&completed={{ selected_completed }}"
+         hx-trigger="revealed"
+         hx-swap="outerHTML"
+         hx-target="this"
+         class="text-center text-xs text-gray-400 py-3">Loading upcoming lectures&hellip;</div>
+{% endif %}

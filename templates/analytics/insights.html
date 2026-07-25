@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Insights - Admission Helper{% endblock %}
+
+{% block content %}
+{% url 'analytics-insights' as insights_url %}
+{% include "components/page_header.html" with title="Analytics" action_label="Refresh" action_hx_get=insights_url action_hx_target="#insights-content" action_hx_swap="outerHTML" %}
+{% include "analytics/_nav.html" %}
+
+{% include "analytics/partials/_insights.html" %}
+{% endblock %}

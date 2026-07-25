@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load ui_tags %}
+
+{% block title %}Dashboard - Admission Helper{% endblock %}
+
+{% block content %}
+{% url 'dashboard-widgets' as dashboard_widgets_url %}
+{% include "components/page_header.html" with title="Dashboard" action_label="Refresh" action_hx_get=dashboard_widgets_url action_hx_target="#dashboard-widgets" action_hx_swap="outerHTML" %}
+
+<section class="mb-8">
+    <h2 class="text-lg font-medium text-gray-800 mb-3">Today's Routine ({{ today }})</h2>
+    {% if has_today_routine %}
+        <ul class="space-y-2">
+            {% for lecture in today_lectures %}
+                <li class="{% card_classes 'dense' %} flex flex-wrap justify-between items-center gap-2">
+                    <span>
+                        <a href="{% url 'subject-detail' lecture.subject.pk %}" class="font-medium text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">{{ lecture.subject.name }}</a>
+                        &mdash; {{ lecture.title }}
+                        <span class="text-gray-500 text-sm">({{ lecture.lecture_code }})</span>
+                    </span>
+                    <a href="{% url 'lecture-detail' lecture.lecture_code %}" class="text-blue-600 hover:underline text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">View</a>
+                </li>
+            {% endfor %}
+            {% for exam in today_exams %}
+                <li class="bg-amber-50 border border-amber-200 rounded-lg p-3 flex flex-wrap justify-between items-center gap-2">
+                    <span class="font-medium">{{ exam.exam_name }}</span>
+                    <a href="{% url 'exam-detail' exam.pk %}" class="text-blue-600 hover:underline text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">View</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        {% include "components/empty_state.html" with message="No routine is scheduled for today - check the Routine Timeline for what's coming up." %}
+    {% endif %}
+</section>
+
+<section class="mb-8 grid gap-4 sm:grid-cols-2">
+    <div class="{% card_classes %}">
+        <h2 class="text-lg font-medium mb-2 text-gray-800">Upcoming Lecture</h2>
+        {% if upcoming_lecture %}
+            <p class="font-medium"><a href="{% url 'subject-detail' upcoming_lecture.subject.pk %}" class="text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">{{ upcoming_lecture.subject.name }}</a> &mdash; {{ upcoming_lecture.title }}</p>
+            <p class="text-sm text-gray-500">{{ upcoming_lecture.lecture_date }}</p>
+            <a href="{% url 'lecture-detail' upcoming_lecture.lecture_code %}" class="text-blue-600 hover:underline text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">View lecture</a>
+        {% else %}
+            <p class="text-gray-500 text-sm">No upcoming lecture scheduled.</p>
+        {% endif %}
+    </div>
+    <div class="{% card_classes %}">
+        <h2 class="text-lg font-medium mb-2 text-gray-800">Upcoming Exam</h2>
+        {% if upcoming_exam %}
+            <p class="font-medium">{{ upcoming_exam.exam_name }}</p>
+            <p class="text-sm text-gray-500">{{ upcoming_exam.exam_date }}</p>
+            <a href="{% url 'exam-detail' upcoming_exam.pk %}" class="text-blue-600 hover:underline text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">View exam</a>
+        {% else %}
+            <p class="text-gray-500 text-sm">No upcoming exam scheduled.</p>
+        {% endif %}
+    </div>
+</section>
+
+{% include "dashboard/_widgets.html" %}
+{% endblock %}

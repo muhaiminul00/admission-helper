@@ -1,0 +1,30 @@
+{% comment %} Component: smart_back — one intelligent Back control
+   (Milestone 12, Phase 7) replacing per-page hardcoded "Back to X"
+   links. Prefers real browser history when there's actually app
+   history to return to (same-origin referrer + history.length > 1) -
+   `history.back()` re-lands on the exact previous URL, and base.html's
+   own scroll-memory script (Phase 8) restores that page's scroll
+   position on load, so nothing extra needs to happen here for scroll/
+   filter restoration. Falls back to `fallback_url` (a real link, so it
+   still works with JavaScript disabled or on a direct page load with
+   no history to return to). Nothing is stored in the database.
+   Context vars: fallback_url (required), label (optional, default
+   "Back"). {% endcomment %}
+<a href="{{ fallback_url }}" class="smart-back-link text-sm text-blue-600 dark:text-blue-400 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
+    &larr; {{ label|default:"Back" }}
+</a>
+<script>
+(function () {
+    var links = document.querySelectorAll(".smart-back-link");
+    var sameOriginHistory = document.referrer
+        && document.referrer.indexOf(window.location.origin) === 0
+        && window.history.length > 1;
+    if (!sameOriginHistory) return;
+    links.forEach(function (link) {
+        link.addEventListener("click", function (event) {
+            event.preventDefault();
+            window.history.back();
+        });
+    });
+})();
+</script>

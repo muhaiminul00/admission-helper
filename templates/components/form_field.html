@@ -1,0 +1,13 @@
+{% comment %} Component: form_field — one Django form field, rendered with a
+   consistent label/help-text/error layout (Phase 5: standardize all
+   forms). Context vars: field (required - a bound Django form field). {% endcomment %}
+<div>
+    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="{{ field.id_for_label }}">{{ field.label }}</label>
+    {{ field }}
+    {% if field.help_text %}
+        <p class="text-gray-400 dark:text-gray-500 text-xs mt-1">{{ field.help_text }}</p>
+    {% endif %}
+    {% for error in field.errors %}
+        <p class="text-red-600 text-xs mt-1" role="alert">{{ error }}</p>
+    {% endfor %}
+</div>

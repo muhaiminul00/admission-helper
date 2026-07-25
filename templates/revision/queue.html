@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Revision Queue - Admission Helper{% endblock %}
+
+{% load ui_tags %}
+{% block content %}
+<div class="{% workspace_toolbar_classes %}">
+    {% include "components/page_header.html" with title="Revision" subtitle="Spaced revision, centered on today's work." %}
+
+    {% include "revision/partials/_filters.html" %}
+</div>
+
+<div id="queue-content">
+    {% include "revision/partials/_queue.html" %}
+</div>
+
+{% include "partials/_timeline_jump_fab.html" with label="Jump to Today's Revision" %}
+{% endblock %}

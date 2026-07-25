@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Chapter Analytics - Admission Helper{% endblock %}
+
+{% block content %}
+{% include "components/page_header.html" with title="Analytics" %}
+{% include "analytics/_nav.html" %}
+
+{% url 'analytics-chapters' as chapters_url %}
+{% include "components/filter_panel.html" with action=chapters_url target="#chapter-results" swap="innerHTML" fields=filter_fields %}
+
+<div id="chapter-results">
+    {% include "analytics/partials/_chapters_table.html" %}
+</div>
+{% endblock %}

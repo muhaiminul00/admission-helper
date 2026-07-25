@@ -1,0 +1,30 @@
+{% extends "emails/base.html" %}
+{% block subject %}{{ exam.get_exam_type_display }} Exam Reminder: {{ exam.exam_name }}{% endblock %}
+{% block content %}
+<h1 style="font-size:20px;margin:0 0 4px;">{{ exam.get_exam_type_display }} Exam Reminder</h1>
+<p style="margin:0 0 16px;color:#4b5563;">
+{% if days_remaining == 0 %}Today{% elif days_remaining == 1 %}Tomorrow{% else %}In {{ days_remaining }} days{% endif %}
+&mdash; {{ exam.exam_date|date:"l, F j, Y" }}
+</p>
+<h2 style="font-size:16px;margin:0 0 8px;">{{ exam.exam_name }}</h2>
+
+{% if covered_subjects %}
+<p style="margin:0 0 4px;"><strong>Subjects:</strong> {% for s in covered_subjects %}{{ s.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+{% endif %}
+{% if covered_chapters %}
+<p style="margin:0 0 12px;"><strong>Chapters:</strong> {% for c in covered_chapters %}{{ c }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+{% endif %}
+
+{% if readiness %}
+<p style="margin:0 0 4px;"><strong>Preparation status:</strong> {{ readiness.readiness_label }} ({{ readiness.percentage }}%)</p>
+{% endif %}
+
+{% if remaining_lectures %}
+<p style="margin:12px 0 4px;"><strong>Remaining lectures to revise ({{ remaining_lectures|length }}):</strong></p>
+<ul style="margin:0;padding-left:20px;">
+{% for lecture in remaining_lectures %}<li>{{ lecture.lecture_code }} — {{ lecture.title|default:lecture.lecture_code }}</li>{% endfor %}
+</ul>
+{% else %}
+<p style="margin:12px 0 0;color:#059669;">All covered lectures are exam-ready.</p>
+{% endif %}
+{% endblock %}

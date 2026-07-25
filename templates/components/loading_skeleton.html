@@ -1,0 +1,14 @@
+{% comment %} Component: loading_skeleton — a lightweight placeholder shown while
+   an HTMX request is in flight, via htmx's own `htmx-indicator`
+   convention (already used by the global #page-indicator bar in
+   base.html) rather than any custom JS. No animation, per this
+   milestone's "keep skeletons simple" instruction - just static gray
+   bars that appear/disappear with the request.
+   Context vars: rows (optional int, default 3). {% endcomment %}
+{% load ui_tags %}
+{% times rows|default:3 as row_range %}
+<div class="htmx-indicator space-y-2" aria-hidden="true">
+    {% for _ in row_range %}
+        <div class="h-12 bg-gray-100 border border-gray-200 dark:bg-slate-800 dark:border-slate-700 rounded"></div>
+    {% endfor %}
+</div>

@@ -1,0 +1,12 @@
+{% comment %} Component: empty_state — a friendly "nothing here" message, used
+   instead of a bare "No data" string wherever a list/table can be
+   empty. Context vars: message (required - a full, specific sentence,
+   e.g. "You're all caught up." or "No lectures are scheduled.").
+   No illustrations (Milestone 11's own instruction, reaffirmed by
+   Milestone 15.2, Part 12) - a small inline glyph, not artwork, plus
+   tighter vertical padding (py-6, was py-8) so an empty table/list
+   doesn't dominate the page. {% endcomment %}
+<div class="text-center py-6">
+    <p class="text-gray-300 dark:text-slate-600 text-xl leading-none mb-1.5" aria-hidden="true">&middot;&middot;&middot;</p>
+    <p class="text-sm text-gray-500 dark:text-gray-400">{{ message }}</p>
+</div>

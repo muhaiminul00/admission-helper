@@ -1,0 +1,136 @@
+{% load ui_tags %}
+<div id="dashboard-widgets">
+    <section class="mb-8">
+        <h2 class="text-lg font-medium mb-3 text-gray-800">Overall Completion</h2>
+        <div class="{% card_classes %}">
+            {% include "components/progress_meter.html" with progress=overall_progress size="md" show_legend=True %}
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                {{ completed_topics }} completed &middot; {{ remaining_topics }} remaining &middot;
+                {{ completion_percentage }}% of {{ total_topics }} topics
+            </p>
+        </div>
+    </section>
+
+    <section class="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {% include "components/metric_card.html" with label="Lectures" value=completed_lectures total=total_lectures sublabel="completed" %}
+        {% include "components/metric_card.html" with label="Exams" value=upcoming_exams total=total_exams sublabel="upcoming" %}
+        {% include "components/metric_card.html" with label="Next Exam" value=days_remaining|default_if_none:"—" unit="d" sublabel=next_exam.exam_name|default:"no upcoming exam" %}
+        {% include "components/metric_card.html" with label="Today" value=daily_progress_count sublabel="topics completed today" %}
+    </section>
+
+    <section class="mb-8 grid gap-4 sm:grid-cols-2">
+        <div class="{% card_classes %}">
+            <h2 class="text-lg font-medium mb-2 text-gray-800">Most Completed Subject</h2>
+            {% if most_completed %}
+                <a href="{% url 'subject-detail' most_completed.subject.pk %}" class="font-medium text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">{{ most_completed.subject.name }}</a>
+                <p class="text-sm text-gray-500">{{ most_completed.percentage }}% ({{ most_completed.completed }} / {{ most_completed.total }})</p>
+            {% else %}
+                <p class="text-gray-500 text-sm">No progress recorded yet.</p>
+            {% endif %}
+        </div>
+        <div class="{% card_classes %}">
+            <h2 class="text-lg font-medium mb-2 text-gray-800">Least Completed Subject</h2>
+            {% if least_completed %}
+                <a href="{% url 'subject-detail' least_completed.subject.pk %}" class="font-medium text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">{{ least_completed.subject.name }}</a>
+                <p class="text-sm text-gray-500">{{ least_completed.percentage }}% ({{ least_completed.completed }} / {{ least_completed.total }})</p>
+            {% else %}
+                <p class="text-gray-500 text-sm">No progress recorded yet.</p>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="mb-8">
+        {% url 'analytics-insights' as insights_url %}
+        {% include "components/section_header.html" with title="Study Advisor" action_label="View full insights" action_url=insights_url %}
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div class="{% card_classes %}">
+                <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">Study Streak</p>
+                <p class="font-medium">{{ study_streak.current_streak }} day{{ study_streak.current_streak|pluralize }}</p>
+                <p class="text-sm text-gray-500">{{ study_streak.longest_streak }} day{{ study_streak.longest_streak|pluralize }} longest</p>
+            </div>
+            <div class="{% card_classes %}">
+                <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">Priority Chapter</p>
+                {% if priority_chapter %}
+                    <a href="{% url 'chapter-detail' priority_chapter.chapter.pk %}" class="font-medium text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">{{ priority_chapter.chapter.subject.name }} &middot; Ch. {{ priority_chapter.chapter.chapter_no }}</a>
+                    <p class="text-sm text-gray-500">{{ priority_chapter.remaining }} topics remaining{% if priority_chapter.in_upcoming_exam %} &middot; in upcoming exam{% endif %}</p>
+                {% else %}
+                    <p class="text-gray-500 text-sm">Nothing pending right now.</p>
+                {% endif %}
+            </div>
+            <div class="{% card_classes %}">
+                <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">Longest Untouched Lecture</p>
+                {% if longest_untouched_lecture %}
+                    <a href="{% url 'lecture-detail' longest_untouched_lecture.lecture.lecture_code %}" class="font-medium text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">{{ longest_untouched_lecture.lecture.lecture_code }}</a>
+                    <p class="text-sm text-gray-500">{{ longest_untouched_lecture.lecture.subject.name }}</p>
+                {% else %}
+                    <p class="text-gray-500 text-sm">Nothing untouched - you're keeping up.</p>
+                {% endif %}
+            </div>
+            <div class="{% card_classes %}">
+                <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">Ready For Exam</p>
+                {% if ready_for_exam %}
+                    <a href="{% url 'exam-detail' ready_for_exam.exam.pk %}" class="font-medium text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">{{ ready_for_exam.exam.exam_name }}</a>
+                    <p class="text-sm mt-1">
+                        {% include "components/badge.html" with text=ready_for_exam.confidence_label secondary=ready_for_exam.readiness_score classes=ready_for_exam.confidence_badge_class %}
+                    </p>
+                {% else %}
+                    <p class="text-gray-500 text-sm">No upcoming exam.</p>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <section class="mb-8">
+        {% url 'revision-queue' as revision_queue_url %}
+        {% include "components/section_header.html" with title="Revision" action_label="View revision queue" action_url=revision_queue_url %}
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-4">
+            {% include "components/metric_card.html" with label="Due Today" value=revision_due_today %}
+            {% class_if_positive revision_overdue "text-red-600" as overdue_class %}
+            {% include "components/metric_card.html" with label="Overdue" value=revision_overdue value_class=overdue_class %}
+            {% include "components/metric_card.html" with label="Upcoming" value=revision_upcoming %}
+            {% include "components/metric_card.html" with label="Completed This Week" value=revision_completed_this_week %}
+        </div>
+        <div class="{% card_classes %}">
+            {% include "components/progress_bar.html" with percentage=revision_completion_percentage size="md" %}
+            <p class="text-sm text-gray-600 mt-2">
+                {{ revision_completion_percentage }}% of all revisions completed &middot;
+                {{ exam_ready_count }} lecture{{ exam_ready_count|pluralize }} exam-ready
+            </p>
+        </div>
+    </section>
+
+    <section class="mb-8 grid gap-4 sm:grid-cols-2">
+        <div>
+            <h2 class="text-lg font-medium mb-3 text-gray-800">Recent Activity</h2>
+            {% if recent_activity %}
+                <ul class="space-y-2">
+                    {% for progress in recent_activity %}
+                        <li class="{% card_classes 'dense' %} text-sm">
+                            <a href="{% url 'lecture-detail' progress.lecture_topic.lecture.lecture_code %}" class="text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
+                                {{ progress.lecture_topic.topic }}
+                            </a>
+                            <span class="text-gray-500"> &mdash; updated {{ progress.updated_at }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                {% include "components/empty_state.html" with message="No progress recorded yet - mark a topic complete to see it here." %}
+            {% endif %}
+        </div>
+        <div>
+            <h2 class="text-lg font-medium mb-3 text-gray-800">Upcoming Exams</h2>
+            {% if upcoming_exams_list %}
+                <ul class="space-y-2">
+                    {% for exam in upcoming_exams_list %}
+                        <li class="{% card_classes 'dense' %} flex flex-wrap justify-between items-center gap-2 text-sm">
+                            <span>{{ exam.exam_name }} <span class="text-gray-500">({{ exam.exam_date }})</span></span>
+                            <a href="{% url 'exam-detail' exam.pk %}" class="text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">View</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                {% include "components/empty_state.html" with message="You're all caught up - no upcoming exams." %}
+            {% endif %}
+        </div>
+    </section>
+</div>

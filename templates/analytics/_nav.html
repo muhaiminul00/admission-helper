@@ -1,0 +1,38 @@
+{% url 'analytics-insights' as i_url %}
+{% url 'analytics-subjects' as s_url %}
+{% url 'analytics-chapters' as c_url %}
+{% url 'analytics-lectures' as l_url %}
+{% url 'analytics-exams' as e_url %}
+{% comment %} Milestone 15.2, Part 10 - segmented tabs (a rounded pill
+   track with an active "chip"), replacing the old underline-tab strip.
+   `flex-wrap`, not `overflow-x-auto` - consistent with this project's
+   own "no horizontal scrolling" rule (Milestone 15.1, Phase 2). {% endcomment %}
+<nav aria-label="Analytics sections" class="mb-6">
+    <div class="inline-flex flex-wrap gap-1 p-1 rounded-lg bg-gray-100 dark:bg-slate-800 text-sm">
+        <a href="{{ i_url }}"
+           {% if request.path == i_url %}aria-current="page"{% endif %}
+           class="px-3 py-1.5 rounded-md whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {% if request.path == i_url %}bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 font-medium shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200{% endif %}">
+            Insights
+        </a>
+        <a href="{{ s_url }}"
+           {% if request.path == s_url %}aria-current="page"{% endif %}
+           class="px-3 py-1.5 rounded-md whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {% if request.path == s_url %}bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 font-medium shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200{% endif %}">
+            Subjects
+        </a>
+        <a href="{{ c_url }}"
+           {% if request.path == c_url %}aria-current="page"{% endif %}
+           class="px-3 py-1.5 rounded-md whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {% if request.path == c_url %}bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 font-medium shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200{% endif %}">
+            Chapters
+        </a>
+        <a href="{{ l_url }}"
+           {% if request.path == l_url %}aria-current="page"{% endif %}
+           class="px-3 py-1.5 rounded-md whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {% if request.path == l_url %}bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 font-medium shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200{% endif %}">
+            Lectures
+        </a>
+        <a href="{{ e_url }}"
+           {% if request.path == e_url %}aria-current="page"{% endif %}
+           class="px-3 py-1.5 rounded-md whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {% if request.path == e_url %}bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 font-medium shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200{% endif %}">
+            Exam Readiness
+        </a>
+    </div>
+</nav>

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Exams - Admission Helper{% endblock %}
+
+{% load ui_tags %}
+{% block content %}
+<div class="{% workspace_toolbar_classes %}">
+    {% include "components/page_header.html" with title="Exams" subtitle="Upcoming and past exams, centered on what's next." %}
+
+    {% url 'exam-timeline' as exam_timeline_url %}
+    {% include "components/filter_panel.html" with action=exam_timeline_url target="#timeline-list" swap="outerHTML" fields=filter_fields %}
+</div>
+
+{% include "exams/partials/_timeline.html" %}
+
+{% include "partials/_timeline_jump_fab.html" with label="Jump to Next Exam" %}
+{% endblock %}

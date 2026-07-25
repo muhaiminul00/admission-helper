@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% load ui_tags %}
+{% status_badge_classes "positive" as positive_badge %}
+{% status_badge_classes "warning" as warning_badge %}
+
+{% block title %}{{ lecture.lecture_code }} - Admission Helper{% endblock %}
+
+{% block content %}
+{% url 'routine-list' as routine_list_url %}
+{% include "components/smart_back.html" with fallback_url=routine_list_url label="Routine" %}
+
+<div class="flex flex-wrap items-center gap-2 mt-2 mb-1">
+    <h1 class="text-2xl font-semibold text-gray-900">{{ lecture.title|default:lecture.lecture_code }}</h1>
+    {% if is_exam_ready %}
+        {% include "components/badge.html" with text="Exam Ready" classes=positive_badge %}
+    {% endif %}
+</div>
+<p class="text-gray-600 mb-2">
+    <a href="{% url 'subject-detail' lecture.subject.pk %}" class="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">{{ lecture.subject.name }}</a>
+    &middot; {{ lecture.lecture_code }} &middot;
+    {% if lecture.lecture_date %}
+        {{ lecture.lecture_date }}{% if lecture.day %} ({{ lecture.day }}){% endif %}
+        {% if lecture.start_time %} &middot; {{ lecture.start_time }}&ndash;{{ lecture.end_time }}{% endif %}
+    {% else %}
+        Not scheduled (self-study / no live class)
+    {% endif %}
+</p>
+
+<p class="flex flex-wrap gap-x-4 gap-y-1 text-sm mb-6">
+    {% if previous_lecture %}
+        <a href="{% url 'lecture-detail' previous_lecture.lecture_code %}" class="text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">&larr; {{ previous_lecture.lecture_code }}</a>
+    {% endif %}
+    {% if next_lecture %}
+        <a href="{% url 'lecture-detail' next_lecture.lecture_code %}" class="text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">{{ next_lecture.lecture_code }} &rarr;</a>
+    {% endif %}
+</p>
+
+{% if covering_exams %}
+    <section class="mb-6">
+        <h2 class="text-lg font-medium mb-2 text-gray-800">Upcoming Exam{{ covering_exams|length|pluralize }}</h2>
+        <ul class="flex flex-wrap gap-2">
+            {% for exam in covering_exams %}
+                <li>
+                    <a href="{% url 'exam-detail' exam.pk %}" class="inline-block px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+                        {{ exam.exam_name }} <span class="text-gray-500">({{ exam.exam_date }})</span>
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    </section>
+{% endif %}
+
+{% if revision_schedules %}
+    <section class="mb-6">
+        <h2 class="text-lg font-medium mb-2 text-gray-800">Revision Schedule</h2>
+        <ul class="bg-white border border-gray-200 rounded-lg divide-y text-sm">
+            {% for schedule in revision_schedules %}
+                <li class="p-2 hover:bg-gray-50 flex flex-wrap justify-between items-center gap-2">
+                    <a href="{% url 'revision-detail' schedule.pk %}" class="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
+                        {{ schedule.get_revision_level_display }}
+                    </a>
+                    {% if schedule.status == "completed" %}
+                        {% include "components/badge.html" with text="Completed" secondary=schedule.completed_at|date:"M j" classes=positive_badge %}
+                    {% else %}
+                        {% include "components/badge.html" with text="Due" secondary=schedule.due_date classes=warning_badge %}
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    </section>
+{% endif %}
+
+{% if lecture.notes %}
+    <p class="bg-gray-100 border border-gray-200 rounded-lg p-3 text-sm mb-6">{{ lecture.notes }}</p>
+{% endif %}
+
+<section class="mb-6">
+    <h2 class="text-lg font-medium mb-2 text-gray-800">Chapters Covered</h2>
+    {% if chapters %}
+        <ul class="bg-white border border-gray-200 rounded-lg divide-y text-sm">
+            {% for chapter in chapters %}
+                <li class="p-2 hover:bg-gray-50">
+                    <a href="{% url 'chapter-detail' chapter.pk %}" class="text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
+                        {{ chapter }}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        {% include "components/empty_state.html" with message="No chapters linked yet." %}
+    {% endif %}
+</section>
+
+<section>
+    <h2 class="text-lg font-medium mb-2 text-gray-800">Topics</h2>
+    {% if topics %}
+        <div class="overflow-x-auto">
+            <table class="w-full bg-white border border-gray-200 rounded-lg text-sm">
+                <caption class="sr-only">Topics for this lecture and their completion status</caption>
+                <thead>
+                    <tr class="text-left border-b bg-gray-50">
+                        <th class="p-2" scope="col">#</th>
+                        <th class="p-2" scope="col">Topic</th>
+                        <th class="p-2" scope="col">Chapter</th>
+                        <th class="p-2 text-center" scope="col">Class</th>
+                        <th class="p-2 text-center" scope="col">Notes</th>
+                        <th class="p-2 text-center" scope="col">Revision</th>
+                        <th class="p-2 text-center" scope="col">Practice</th>
+                    </tr>
+                </thead>
+                <tbody id="topics-body">
+                    {% for topic in topics %}
+                        {% include "lectures/_topic_row.html" %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        {% include "components/empty_state.html" with message="No topics recorded for this lecture." %}
+    {% endif %}
+</section>
+{% endblock %}

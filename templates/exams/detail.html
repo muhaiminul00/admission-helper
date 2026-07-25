@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% load ui_tags %}
+{% status_badge_classes "positive" as positive_badge %}
+
+{% block title %}{{ exam.exam_name }} - Admission Helper{% endblock %}
+
+{% block content %}
+{% url 'exam-timeline' as exam_timeline_url %}
+{% include "components/smart_back.html" with fallback_url=exam_timeline_url label="Exams" %}
+
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <div>
+        <h1 class="text-2xl font-semibold text-gray-900">{{ exam.exam_name }}</h1>
+        <p class="mt-1 text-sm text-gray-500">
+            {{ exam.get_exam_type_display }} &middot; {{ exam.exam_date }}
+            {% if exam.exam_code %} &middot; {{ exam.exam_code }}{% endif %}
+        </p>
+    </div>
+</div>
+
+<section class="mb-6 grid gap-4 sm:grid-cols-2">
+    <div class="{% card_classes %}">
+        <h2 class="text-lg font-medium mb-2 text-gray-800">Online Period</h2>
+        {% if exam.online_start or exam.online_end %}
+            <p class="text-sm">{{ exam.online_start|default:"—" }} to {{ exam.online_end|default:"—" }}</p>
+        {% else %}
+            <p class="text-gray-500 text-sm">Not specified.</p>
+        {% endif %}
+    </div>
+    <div class="{% card_classes %}">
+        <h2 class="text-lg font-medium mb-2 text-gray-800">Readiness</h2>
+        {% if readiness_row %}
+            {% include "components/progress_bar.html" with percentage=readiness_row.percentage size="sm" show_label=True %}
+            <p class="text-sm text-gray-600 mt-2">
+                {% include "components/badge.html" with text=readiness_row.readiness_label classes=readiness_row.readiness_badge_class %}
+                {{ readiness_row.completed_topics }}/{{ readiness_row.total_topics }} topics covered
+            </p>
+        {% else %}
+            <p class="text-gray-500 text-sm">Not enough data yet.</p>
+        {% endif %}
+    </div>
+</section>
+
+{% if exam.notes %}
+<section class="mb-6">
+    <div class="{% card_classes %}">
+        <h2 class="text-lg font-medium mb-2 text-gray-800">Notes</h2>
+        <p class="text-sm whitespace-pre-line">{{ exam.notes }}</p>
+    </div>
+</section>
+{% endif %}
+
+{% if covered_subjects %}
+<section class="mb-6">
+    {% include "components/section_header.html" with title="Covered Subjects" count=covered_subjects|length %}
+    <ul class="flex flex-wrap gap-2">
+        {% for subject in covered_subjects %}
+            <li>
+                <a href="{% url 'subject-detail' subject.pk %}" class="inline-block px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+                    {{ subject.name }}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+
+{% if covered_chapters %}
+<section class="mb-6">
+    {% include "components/section_header.html" with title="Covered Chapters" count=covered_chapters|length %}
+    <ul class="bg-white border border-gray-200 rounded-lg divide-y text-sm">
+        {% for chapter in covered_chapters %}
+            <li class="p-2 hover:bg-gray-50">
+                <a href="{% url 'chapter-detail' chapter.pk %}" class="text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
+                    {{ chapter.subject.name }} &middot; {{ chapter.get_paper_display }} &middot; Ch. {{ chapter.chapter_no }} &mdash; {{ chapter.name }}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+
+<section>
+    {% include "components/section_header.html" with title="Covered Lectures" count=covered_lecture_rows|length %}
+    {% if covered_lecture_rows %}
+        <ul class="bg-white border border-gray-200 rounded-lg divide-y text-sm">
+            {% for row in covered_lecture_rows %}
+                <li class="p-2 hover:bg-gray-50 flex justify-between items-center gap-2">
+                    {% if row.lecture %}
+                        <a href="{% url 'lecture-detail' row.lecture.lecture_code %}" class="text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
+                            {{ row.lecture.subject.name }} &mdash; {{ row.lecture.title|default:row.code }}
+                        </a>
+                        {% if not row.lecture.lecture_date %}
+                            <span class="text-gray-400 text-xs">(self-study / no live class)</span>
+                        {% endif %}
+                        {% if row.exam_ready %}
+                            {% include "components/badge.html" with text="Exam Ready" classes=positive_badge %}
+                        {% endif %}
+                    {% else %}
+                        <span class="text-gray-500">{{ row.code }}</span>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        {% include "components/empty_state.html" with message="No lectures listed for this exam." %}
+    {% endif %}
+</section>
+{% endblock %}

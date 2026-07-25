@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+/* Milestone 15.1, Phase 9/10 - class-based dark mode (`dark:` utilities
+   activate when an ancestor has the `.dark` class), not the media-query
+   strategy - the theme toggle needs to force Light/Dark regardless of
+   the OS preference, which only a class strategy allows. "System" mode
+   is implemented in base.html by JS toggling this class to match
+   `prefers-color-scheme` and reacting to OS changes live. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/**
+  * A catch-all path to Django template files, JavaScript, and Python files
+  * that contain Tailwind CSS classes and will be scanned by Tailwind to generate the final CSS file.
+  *
+  * If your final CSS file is not being updated after code changes, you may want to broaden or narrow
+  * the scope of this path.
+  */
+@source "../../../**/*.{html,py,js}";

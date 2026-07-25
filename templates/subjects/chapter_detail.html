@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% load ui_tags %}
+{% status_badge_classes "positive" as positive_badge %}
+{% status_badge_classes "warning" as warning_badge %}
+
+{% block title %}{{ chapter.name }} - Admission Helper{% endblock %}
+
+{% block content %}
+{% url 'subject-detail' chapter.subject.pk as subject_url %}
+{% include "components/smart_back.html" with fallback_url=subject_url label=chapter.subject.name %}
+
+{% include "components/page_header.html" with title=chapter.name subtitle=chapter.subject.name %}
+
+<section class="mb-6">
+    <div class="{% card_classes %}">
+        {% if chapter_row %}
+            {% include "components/progress_meter.html" with progress=chapter_progress size="md" show_legend=True %}
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                {{ chapter_row.completed }} / {{ chapter_row.total }} topics completed &middot;
+                {{ chapter_row.remaining }} remaining
+            </p>
+        {% else %}
+            {% include "components/empty_state.html" with message="No topics recorded for this chapter yet." %}
+        {% endif %}
+    </div>
+</section>
+
+{% if lectures %}
+<section class="mb-6">
+    {% include "components/section_header.html" with title="Lectures Covering This Chapter" count=lectures|length %}
+    <ul class="bg-white border border-gray-200 rounded-lg divide-y text-sm">
+        {% for lecture in lectures %}
+            <li class="p-3 hover:bg-gray-50">
+                <a href="{% url 'lecture-detail' lecture.lecture_code %}" class="text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
+                    {{ lecture.lecture_code }}{% if lecture.title %} &mdash; {{ lecture.title }}{% endif %}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+
+<section>
+    {% include "components/section_header.html" with title="Topics" count=topics|length %}
+    <div class="overflow-x-auto">
+        <table class="w-full bg-white border border-gray-200 rounded-lg text-sm">
+            <caption class="sr-only">Topics in {{ chapter.name }}</caption>
+            <thead>
+                <tr class="text-left border-b bg-gray-50">
+                    <th scope="col" class="p-2">Topic</th>
+                    <th scope="col" class="p-2">Lecture</th>
+                    <th scope="col" class="p-2 text-center">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for topic in topics %}
+                    <tr class="border-b last:border-0 hover:bg-gray-50">
+                        <td class="p-2">{{ topic.topic }}</td>
+                        <td class="p-2">
+                            <a href="{% url 'lecture-detail' topic.lecture.lecture_code %}" class="text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
+                                {{ topic.lecture.lecture_code }}
+                            </a>
+                        </td>
+                        <td class="p-2 text-center">
+                            {% if topic.progress_obj.class_done and topic.progress_obj.notes_done and topic.progress_obj.revision_done and topic.progress_obj.practice_done %}
+                                {% include "components/badge.html" with text="Done" classes=positive_badge %}
+                            {% else %}
+                                {% include "components/badge.html" with text="Pending" classes=warning_badge %}
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="3" class="p-4 text-center text-gray-500">No topics recorded for this chapter.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

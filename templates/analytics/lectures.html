@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Lecture Analytics - Admission Helper{% endblock %}
+
+{% block content %}
+{% include "components/page_header.html" with title="Analytics" %}
+{% include "analytics/_nav.html" %}
+
+{% url 'analytics-lectures' as lectures_url %}
+{% include "components/filter_panel.html" with action=lectures_url target="#lecture-results" swap="innerHTML" fields=filter_fields extra_trigger="keyup changed delay:300ms from:#q" %}
+
+<div id="lecture-results">
+    {% include "analytics/partials/_lectures_table.html" %}
+</div>
+{% endblock %}

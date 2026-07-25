@@ -1,0 +1,11 @@
+{% comment %} Component: auth_card — the shared shell every auth page (login,
+   register, password reset/change) uses: a centered, narrow bordered
+   card under a page title. Context vars: title (required),
+   content_template (required - see components/card.html for why this
+   is a template-name indirection, not literal child markup). {% endcomment %}
+<div class="max-w-sm mx-auto">
+    <h1 class="text-2xl font-semibold mb-6 text-gray-900 dark:text-gray-100">{{ title }}</h1>
+    <div class="bg-white border border-gray-200 rounded-lg p-6 dark:bg-slate-800 dark:border-slate-700">
+        {% include content_template %}
+    </div>
+</div>

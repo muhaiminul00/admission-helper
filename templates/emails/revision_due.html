@@ -1,0 +1,23 @@
+{% extends "emails/base.html" %}
+{% block subject %}Revision Due Today: {{ lecture.lecture_code }}{% endblock %}
+{% block content %}
+<h1 style="font-size:20px;margin:0 0 4px;">Revision Due Today</h1>
+<p style="margin:0 0 16px;">
+<strong>{{ subject.name }}</strong> — {{ lecture.title|default:lecture.lecture_code }}
+</p>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;color:#374151;">
+<tr><td style="padding:4px 0;">Lecture</td><td style="padding:4px 0;text-align:right;">{{ lecture.lecture_code }}</td></tr>
+<tr><td style="padding:4px 0;">Priority</td><td style="padding:4px 0;text-align:right;">{{ schedule.get_revision_level_display }}</td></tr>
+{% if days_since_last_study is not None %}
+<tr><td style="padding:4px 0;">Days since last study</td><td style="padding:4px 0;text-align:right;">{{ days_since_last_study }}</td></tr>
+{% endif %}
+</table>
+
+{% if chapters %}
+<h2 style="font-size:16px;margin:16px 0 8px;">Chapters</h2>
+<ul style="margin:0;padding-left:20px;">
+{% for chapter in chapters %}<li>{{ chapter }}</li>{% endfor %}
+</ul>
+{% endif %}
+{% endblock %}

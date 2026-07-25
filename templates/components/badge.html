@@ -1,0 +1,7 @@
+{% comment %} Component: badge — a small status pill. Context vars: text
+   (required), secondary (optional - rendered after " · ", e.g. a
+   score alongside a label), classes (required - the color Tailwind
+   classes, e.g. "bg-emerald-100 text-emerald-800"; computed
+   server-side by the existing readiness/status services so this
+   component never encodes business-logic thresholds itself). {% endcomment %}
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ classes }}">{{ text }}{% if secondary %} &middot; {{ secondary }}{% endif %}</span>

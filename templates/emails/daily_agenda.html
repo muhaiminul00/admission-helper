@@ -1,0 +1,41 @@
+{% extends "emails/base.html" %}
+{% block subject %}Your Study Agenda for {{ today|date:"F j" }}{% endblock %}
+{% block content %}
+<h1 style="font-size:20px;margin:0 0 4px;">Your Study Agenda</h1>
+<p style="margin:0 0 16px;color:#4b5563;">{{ today|date:"l, F j, Y" }}</p>
+
+{% if not has_activity %}
+<p style="margin:0;">No scheduled study activities today.</p>
+{% else %}
+
+{% if exams %}
+<h2 style="font-size:16px;margin:16px 0 8px;">Exams Today</h2>
+<ul style="margin:0;padding-left:20px;">
+{% for exam in exams %}<li>{{ exam.exam_name }} ({{ exam.get_exam_type_display }})</li>{% endfor %}
+</ul>
+{% endif %}
+
+{% if lectures %}
+<h2 style="font-size:16px;margin:16px 0 8px;">Today's Lectures ({{ lectures|length }})</h2>
+<ul style="margin:0;padding-left:20px;">
+{% for lecture in lectures %}<li>{{ lecture.subject.name }} — {{ lecture.title|default:lecture.lecture_code }}</li>{% endfor %}
+</ul>
+{% endif %}
+
+{% if revisions %}
+<h2 style="font-size:16px;margin:16px 0 8px;">Revisions Due Today ({{ revisions|length }})</h2>
+<ul style="margin:0;padding-left:20px;">
+{% for schedule in revisions %}<li>{{ schedule.lecture.subject.name }} — {{ schedule.lecture.lecture_code }} ({{ schedule.get_revision_level_display }})</li>{% endfor %}
+</ul>
+{% endif %}
+
+{% if overdue_revisions %}
+<h2 style="font-size:16px;margin:16px 0 8px;color:#b91c1c;">High Priority: Overdue Revisions ({{ overdue_revisions|length }})</h2>
+<ul style="margin:0;padding-left:20px;">
+{% for schedule in overdue_revisions %}<li>{{ schedule.lecture.subject.name }} — {{ schedule.lecture.lecture_code }}</li>{% endfor %}
+</ul>
+{% endif %}
+
+<p style="margin:16px 0 0;color:#4b5563;">Estimated study load: {{ study_load }} item{{ study_load|pluralize }}.</p>
+{% endif %}
+{% endblock %}

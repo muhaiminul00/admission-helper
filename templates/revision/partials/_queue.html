@@ -1,0 +1,80 @@
+{% load ui_tags %}
+{% status_badge_classes "positive" as positive_badge %}
+{% status_badge_classes "warning" as warning_badge %}
+{% status_badge_classes "danger" as danger_badge %}
+{% status_badge_classes "info" as info_badge %}
+{% include "revision/partials/_stats.html" %}
+
+<section class="mb-6">
+    {% include "components/section_header.html" with title="Overdue" count=overdue|length sticky=True %}
+    <ul class="bg-white border border-gray-200 rounded-lg divide-y text-sm">
+        {% for schedule in overdue %}
+            <li class="p-3 hover:bg-gray-50 flex flex-wrap justify-between items-center gap-2">
+                <a href="{% url 'revision-detail' schedule.pk %}" class="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
+                    <span class="font-medium">{{ schedule.lecture.lecture_code }}</span>
+                    <span class="text-gray-500"> &mdash; {{ schedule.lecture.subject.name }} &middot; {{ schedule.get_revision_level_display }}</span>
+                </a>
+                {% include "components/badge.html" with text="Due" secondary=schedule.due_date classes=danger_badge %}
+            </li>
+        {% empty %}
+            <li>{% include "components/empty_state.html" with message="No overdue revisions - you're on top of things." %}</li>
+        {% endfor %}
+    </ul>
+</section>
+
+<div id="today-marker" class="my-4 flex items-center gap-2">
+    <div class="flex-1 border-t-2 border-blue-500"></div>
+    <span class="px-2 py-0.5 rounded bg-blue-600 text-white text-xs font-semibold tracking-wide">TODAY</span>
+    <div class="flex-1 border-t-2 border-blue-500"></div>
+</div>
+
+<section class="mb-6">
+    {% include "components/section_header.html" with title="Due Today" count=due_today|length sticky=True %}
+    <ul class="bg-white border border-gray-200 rounded-lg divide-y text-sm">
+        {% for schedule in due_today %}
+            <li class="p-3 hover:bg-gray-50 flex flex-wrap justify-between items-center gap-2">
+                <a href="{% url 'revision-detail' schedule.pk %}" class="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
+                    <span class="font-medium">{{ schedule.lecture.lecture_code }}</span>
+                    <span class="text-gray-500"> &mdash; {{ schedule.lecture.subject.name }} &middot; {{ schedule.get_revision_level_display }}</span>
+                </a>
+                {% include "components/badge.html" with text="today" classes=warning_badge %}
+            </li>
+        {% empty %}
+            <li>{% include "components/empty_state.html" with message="Nothing due today." %}</li>
+        {% endfor %}
+    </ul>
+</section>
+
+<section class="mb-6">
+    {% include "components/section_header.html" with title="Upcoming" count=upcoming|length sticky=True %}
+    <ul class="bg-white border border-gray-200 rounded-lg divide-y text-sm">
+        {% for schedule in upcoming %}
+            <li class="p-3 hover:bg-gray-50 flex flex-wrap justify-between items-center gap-2">
+                <a href="{% url 'revision-detail' schedule.pk %}" class="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
+                    <span class="font-medium">{{ schedule.lecture.lecture_code }}</span>
+                    <span class="text-gray-500"> &mdash; {{ schedule.lecture.subject.name }} &middot; {{ schedule.get_revision_level_display }}</span>
+                </a>
+                {% include "components/badge.html" with text="Due" secondary=schedule.due_date classes=info_badge %}
+            </li>
+        {% empty %}
+            <li>{% include "components/empty_state.html" with message="No upcoming revisions scheduled yet." %}</li>
+        {% endfor %}
+    </ul>
+</section>
+
+<section class="mb-6">
+    {% include "components/section_header.html" with title="Completed" count=completed|length sticky=True %}
+    <ul class="bg-white border border-gray-200 rounded-lg divide-y text-sm">
+        {% for schedule in completed %}
+            <li class="p-3 hover:bg-gray-50 flex flex-wrap justify-between items-center gap-2">
+                <a href="{% url 'revision-detail' schedule.pk %}" class="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
+                    <span class="font-medium">{{ schedule.lecture.lecture_code }}</span>
+                    <span class="text-gray-500"> &mdash; {{ schedule.lecture.subject.name }} &middot; {{ schedule.get_revision_level_display }}</span>
+                </a>
+                {% include "components/badge.html" with text="Completed" secondary=schedule.completed_at|date:"M j" classes=positive_badge %}
+            </li>
+        {% empty %}
+            <li>{% include "components/empty_state.html" with message="No completed revisions yet." %}</li>
+        {% endfor %}
+    </ul>
+</section>

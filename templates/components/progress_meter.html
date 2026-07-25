@@ -1,0 +1,77 @@
+{% load ui_tags %}
+{% comment %} Component: progress_meter — Milestone 15.2, Parts 2-6: the
+   multi-dimensional progress visualization. Replaces every plain,
+   single-color progress_bar.html usage that represents real per-topic
+   study data (Class/Notes/Revision/Practice, each an independent 25%
+   - see progress.services.progress_service, the single source of
+   truth this component always renders from; no page computes any of
+   these numbers itself).
+
+   Context vars:
+   progress (required) - a dict from progress_service (topic_count,
+     total_units, completed_units, percentage, dimensions, segments).
+   size ("sm"/"md", default "md") - block/bar height.
+   show_legend (optional bool, default False) - a small color key
+     below the meter (Class/Notes/Revision/Practice).
+   show_percentage (optional bool, default True) - the "N/M units"
+     caption beside the meter.
+   tooltip (optional bool, default True) - per-segment title attrs.
+   extra_classes (optional).
+
+   `show_percentage`/`tooltip` use `default_if_none`, not `default` -
+   the plain `default` filter substitutes on *any* falsy value, so an
+   explicit `tooltip=False` would be silently replaced by the "True"
+   default (the same filter-semantics trap this project has hit
+   before, e.g. `add`'s fallback string-concat behavior) and could
+   never actually be turned off.
+
+   Rendering adapts to progress.total_units alone (Part 5) - never a
+   caller choice - so "the meaning stays identical while the
+   rendering adapts": <=32 units renders individual blocks (grouped by
+   dimension, narrower once above 16 - Part 5's small/medium tiers);
+   >32 units renders one continuous 4-segment bar instead of dozens of
+   tiny blocks (Part 5's large tier). {% endcomment %}
+<div class="{{ extra_classes }}">
+    <div class="flex items-center gap-2">
+        <div class="flex-1 min-w-0"
+             role="progressbar" aria-valuenow="{{ progress.percentage }}" aria-valuemin="0" aria-valuemax="100"
+             aria-label="{{ progress.completed_units }} of {{ progress.total_units }} study units complete">
+            {% if progress.total_units > 32 %}
+                <div class="flex gap-0.5 {% if size == 'sm' %}h-2{% else %}h-3{% endif %}">
+                    {% for segment in progress.segments %}
+                        <div class="flex-1 bg-gray-200 dark:bg-slate-700 rounded-sm overflow-hidden"
+                             {% if tooltip|default_if_none:True %}title="{{ segment.label }}: {{ segment.count }}/{{ segment.total }} ({{ segment.percentage }}%)"{% endif %}>
+                            <div class="{{ segment.color_class }} h-full" style="width: {{ segment.percentage }}%"></div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="flex flex-wrap {% if progress.total_units > 16 %}gap-px{% else %}gap-0.5{% endif %}">
+                    {% for segment in progress.segments %}
+                        {% times segment.total as unit_range %}
+                        {% for i in unit_range %}
+                            <span class="rounded-sm inline-block
+                                         {% if progress.total_units > 16 %}w-1.5{% else %}w-3{% endif %}
+                                         {% if size == 'sm' %}h-2{% else %}h-3{% endif %}
+                                         {% if forloop.counter0 < segment.count %}{{ segment.color_class }}{% else %}bg-gray-200 dark:bg-slate-700{% endif %}"
+                                  {% if tooltip|default_if_none:True %}title="{{ segment.label }} {{ forloop.counter }}/{{ segment.total }}{% if forloop.counter0 < segment.count %} - done{% endif %}"{% endif %}></span>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        {% if show_percentage|default_if_none:True %}
+            <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">{{ progress.completed_units }}/{{ progress.total_units }}</span>
+        {% endif %}
+    </div>
+    {% if show_legend %}
+        <div class="flex flex-wrap gap-3 mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+            {% for segment in progress.segments %}
+                <span class="inline-flex items-center gap-1">
+                    <span class="inline-block w-2 h-2 rounded-sm {{ segment.color_class }}"></span>
+                    {{ segment.label }}
+                </span>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>

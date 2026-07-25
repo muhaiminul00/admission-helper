@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Compare Dataset - Admission Helper{% endblock %}
+
+{% block content %}
+{% include "components/page_header.html" with title="Compare Dataset" subtitle="Comparing the CSVs currently in the project root against the current database. Read-only - nothing is imported here." %}
+
+{% include "datasets/partials/_filters.html" %}
+
+<div id="compare-content">
+    {% include "datasets/partials/_compare.html" %}
+</div>
+{% endblock %}

@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+{% load ui_tags %}
+
+{% block title %}Reminder Administration - Admission Helper{% endblock %}
+
+{% block content %}
+{% include "components/page_header.html" with title="Reminder Administration" subtitle="Verify email configuration and manually test reminders before relying on them in production." %}
+
+{% status_badge_classes "positive" as positive_badge %}
+{% status_badge_classes "warning" as warning_badge %}
+{% status_badge_classes "danger" as danger_badge %}
+{% status_badge_classes "info" as info_badge %}
+{% status_badge_classes "neutral" as neutral_badge %}
+
+<section class="mb-6">
+    <div class="{% card_classes %}">
+        <h2 class="text-lg font-medium mb-3 text-gray-800 dark:text-gray-100">Email Configuration</h2>
+
+        <div class="flex items-center gap-2 mb-4">
+            <span class="text-sm text-gray-500 dark:text-gray-400">Status</span>
+            {% if email_config.status == "ready" %}
+                <span class="text-xs font-medium px-2 py-0.5 rounded {{ positive_badge }}">Ready</span>
+            {% elif email_config.status == "incomplete" %}
+                <span class="text-xs font-medium px-2 py-0.5 rounded {{ warning_badge }}">Configuration Incomplete</span>
+            {% else %}
+                <span class="text-xs font-medium px-2 py-0.5 rounded {{ danger_badge }}">Sending Disabled</span>
+            {% endif %}
+        </div>
+
+        <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm mb-4">
+            <div class="flex justify-between border-b border-gray-100 dark:border-slate-700 py-1">
+                <dt class="text-gray-500 dark:text-gray-400">Email Backend</dt>
+                <dd class="text-gray-900 dark:text-gray-100">{{ email_config.backend_label }}</dd>
+            </div>
+            <div class="flex justify-between border-b border-gray-100 dark:border-slate-700 py-1">
+                <dt class="text-gray-500 dark:text-gray-400">From Address</dt>
+                <dd class="text-gray-900 dark:text-gray-100">{{ email_config.from_email }}</dd>
+            </div>
+            <div class="flex justify-between border-b border-gray-100 dark:border-slate-700 py-1">
+                <dt class="text-gray-500 dark:text-gray-400">SMTP Host</dt>
+                <dd class="text-gray-900 dark:text-gray-100">{{ email_config.host|default:"Not configured" }}</dd>
+            </div>
+            <div class="flex justify-between border-b border-gray-100 dark:border-slate-700 py-1">
+                <dt class="text-gray-500 dark:text-gray-400">SMTP Port</dt>
+                <dd class="text-gray-900 dark:text-gray-100">{{ email_config.port|default:"Not configured" }}</dd>
+            </div>
+            <div class="flex justify-between border-b border-gray-100 dark:border-slate-700 py-1">
+                <dt class="text-gray-500 dark:text-gray-400">Encryption</dt>
+                <dd class="text-gray-900 dark:text-gray-100">{{ email_config.encryption }}</dd>
+            </div>
+            <div class="flex justify-between border-b border-gray-100 dark:border-slate-700 py-1">
+                <dt class="text-gray-500 dark:text-gray-400">Authenticated User</dt>
+                <dd class="text-gray-900 dark:text-gray-100">{{ email_config.host_user }}</dd>
+            </div>
+            <div class="flex justify-between border-b border-gray-100 dark:border-slate-700 py-1">
+                <dt class="text-gray-500 dark:text-gray-400">Timezone</dt>
+                <dd class="text-gray-900 dark:text-gray-100">{{ email_config.timezone }}</dd>
+            </div>
+            <div class="flex justify-between border-b border-gray-100 dark:border-slate-700 py-1">
+                <dt class="text-gray-500 dark:text-gray-400">Email Queue</dt>
+                <dd class="text-gray-900 dark:text-gray-100">Immediate delivery</dd>
+            </div>
+        </dl>
+
+        {% if email_config.issues %}
+            <div class="mb-4 rounded border border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950 p-3">
+                <p class="text-sm font-medium text-amber-800 dark:text-amber-300 mb-1">Configuration guidance</p>
+                <ul class="text-sm text-amber-700 dark:text-amber-400 list-disc list-inside">
+                    {% for issue in email_config.issues %}<li>{{ issue }}</li>{% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm mb-4">
+            <div>
+                <p class="text-gray-500 dark:text-gray-400 mb-1">Last Successful Email</p>
+                {% if last_success %}
+                    <p class="text-gray-900 dark:text-gray-100">{{ last_success.sent_at|date:"M j, Y H:i" }} &middot; {{ last_success.user }} &middot; {{ last_success.get_reminder_type_display }}</p>
+                {% else %}
+                    <p class="text-gray-400 dark:text-gray-500">No successful sends recorded.</p>
+                {% endif %}
+            </div>
+            <div>
+                <p class="text-gray-500 dark:text-gray-400 mb-1">Last Failed Email</p>
+                {% if last_failure %}
+                    <p class="text-gray-900 dark:text-gray-100">{{ last_failure.sent_at|date:"M j, Y H:i" }} &middot; {{ last_failure.user }} &middot; {{ last_failure.get_reminder_type_display }}</p>
+                    <p class="text-red-600 dark:text-red-400">{{ last_failure.error_message }}</p>
+                {% else %}
+                    <p class="text-gray-400 dark:text-gray-500">No failures recorded.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <form method="post" class="inline">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="test_connection">
+            <button type="submit" class="{% button_classes 'secondary' %}">Test SMTP Connection</button>
+        </form>
+
+        {% if result.kind == "connection" %}
+            <p class="mt-3 text-sm {% if result.success %}text-emerald-700 dark:text-emerald-400{% else %}text-red-600 dark:text-red-400{% endif %}">
+                {% if result.success %}&check;{% else %}&cross;{% endif %} {{ result.message }}
+            </p>
+        {% endif %}
+    </div>
+</section>
+
+<section class="mb-6">
+    <div class="{% card_classes %}">
+        <h2 class="text-lg font-medium mb-3 text-gray-800 dark:text-gray-100">Send Test Email</h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+            Sends one standalone email using the shared HTML layout - this bypasses the reminder engine entirely and exists only to verify delivery.
+        </p>
+        <form method="post" class="space-y-3 max-w-md">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="send_test_email">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="test-email-recipient">Recipient</label>
+                <input type="email" id="test-email-recipient" name="recipient_email" value="{{ request.user.email }}" class="{% field_classes %}">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="test-email-subject">Subject</label>
+                <input type="text" id="test-email-subject" name="subject" value="{{ default_test_subject }}" class="{% field_classes %}">
+            </div>
+            <button type="submit" class="{% button_classes 'primary' %}">Send Test Email</button>
+        </form>
+
+        {% if result.kind == "test_email" %}
+            <div class="mt-4">
+                {% if result.success %}
+                    <p class="text-sm text-emerald-700 dark:text-emerald-400">&check; Sent to {{ result.recipient_email }} at {{ result.sent_at|date:"M j, Y H:i" }}.</p>
+                {% else %}
+                    <p class="text-sm text-red-600 dark:text-red-400">&cross; Failed to send to {{ result.recipient_email }}: {{ result.error }}</p>
+                {% endif %}
+                <div class="mt-3">
+                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">HTML Preview</p>
+                    <iframe srcdoc="{{ result.html }}" title="Test email HTML preview" class="w-full h-64 border border-gray-200 dark:border-slate-700 rounded"></iframe>
+                </div>
+                <div class="mt-3">
+                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Plain-Text Preview</p>
+                    <pre class="text-xs bg-gray-50 dark:bg-slate-800 dark:text-gray-200 border border-gray-200 dark:border-slate-700 rounded p-3 whitespace-pre-wrap">{{ result.text }}</pre>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<section class="mb-6">
+    <div class="{% card_classes %}">
+        <h2 class="text-lg font-medium mb-3 text-gray-800 dark:text-gray-100">Reminder Test Center</h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+            Preview or send a reminder exactly as it would go out for a chosen recipient right now - subject to the same trigger conditions and duplicate protection as an automatic run.
+        </p>
+        <form method="post" class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end max-w-3xl">
+            {% csrf_token %}
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="test-center-recipient">Recipient</label>
+                <select id="test-center-recipient" name="user_id" class="{% field_classes %}">
+                    {% for candidate in recipients %}
+                        <option value="{{ candidate.pk }}" {% if candidate.pk == request.user.pk %}selected{% endif %}>
+                            {{ candidate.username }}{% if candidate.pk == request.user.pk %} (you){% endif %}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="test-center-type">Reminder Type</label>
+                <select id="test-center-type" name="reminder_type" class="{% field_classes %}">
+                    <option value="__all__">Run Reminder Engine (all types)</option>
+                    {% for value, label in reminder_types %}
+                        <option value="{{ value }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="flex gap-2">
+                <button type="submit" name="action" value="preview" class="{% button_classes 'secondary' %}">Preview</button>
+                <button type="submit" name="action" value="send" class="{% button_classes 'primary' %}">Send Now</button>
+            </div>
+        </form>
+
+        {% if result.kind == "preview" %}
+            <div class="mt-4">
+                {% if result.found %}
+                    <p class="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                        Due right now for <strong>{{ result.recipient.username }}</strong>: <strong>{{ result.subject }}</strong>
+                    </p>
+                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">HTML Preview</p>
+                    <iframe srcdoc="{{ result.html }}" title="Reminder HTML preview" class="w-full h-64 border border-gray-200 dark:border-slate-700 rounded mb-3"></iframe>
+                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Plain-Text Preview</p>
+                    <pre class="text-xs bg-gray-50 dark:bg-slate-800 dark:text-gray-200 border border-gray-200 dark:border-slate-700 rounded p-3 whitespace-pre-wrap">{{ result.text }}</pre>
+                {% else %}
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                        Nothing due right now for <strong>{{ result.recipient.username }}</strong> - either the trigger conditions aren't met, or this occurrence was already sent (duplicate protection).
+                    </p>
+                {% endif %}
+            </div>
+        {% elif result.kind == "send" %}
+            <div class="mt-4 space-y-1">
+                {% if result.entries %}
+                    {% for entry in result.entries %}
+                        <p class="text-sm {% if entry.delivered %}text-emerald-700 dark:text-emerald-400{% else %}text-red-600 dark:text-red-400{% endif %}">
+                            {% if entry.delivered %}&check; Sent{% else %}&cross; Failed{% endif %}
+                            &middot; {{ entry.type_label }} &middot; {{ result.recipient.username }} &middot; {% now "M j, Y H:i" %}
+                            {% if entry.error %}&middot; {{ entry.error }}{% endif %}
+                        </p>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                        Nothing due right now for <strong>{{ result.recipient.username }}</strong> - either the trigger conditions aren't met, or this occurrence was already sent (duplicate protection).
+                    </p>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<section>
+    <div class="{% card_classes %}">
+        <h2 class="text-lg font-medium mb-3 text-gray-800 dark:text-gray-100">Reminder Activity Log</h2>
+        {% if recent_logs %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <caption class="sr-only">Recent reminder deliveries</caption>
+                    <thead>
+                        <tr class="text-left text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-slate-700">
+                            <th class="py-2 pr-4 font-medium">Timestamp</th>
+                            <th class="py-2 pr-4 font-medium">Type</th>
+                            <th class="py-2 pr-4 font-medium">Recipient</th>
+                            <th class="py-2 pr-4 font-medium">Status</th>
+                            <th class="py-2 font-medium">Trigger</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in recent_logs %}
+                            <tr class="border-b last:border-0 border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800">
+                                <td class="py-2 pr-4 text-gray-500 dark:text-gray-400">{{ log.sent_at|date:"M j, H:i" }}</td>
+                                <td class="py-2 pr-4 text-gray-900 dark:text-gray-100">{{ log.get_reminder_type_display }}</td>
+                                <td class="py-2 pr-4 text-gray-900 dark:text-gray-100">{{ log.user.username }}</td>
+                                <td class="py-2 pr-4">
+                                    {% if log.status == "success" %}
+                                        <span class="text-xs font-medium px-2 py-0.5 rounded {{ positive_badge }}">Success</span>
+                                    {% else %}
+                                        <span class="text-xs font-medium px-2 py-0.5 rounded {{ danger_badge }}">Failed</span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-2">
+                                    {% if log.triggered_by == "manual" %}
+                                        <span class="text-xs font-medium px-2 py-0.5 rounded {{ info_badge }}">Manual</span>
+                                    {% else %}
+                                        <span class="text-xs font-medium px-2 py-0.5 rounded {{ neutral_badge }}">Automatic</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            {% include "components/empty_state.html" with message="No reminders have been sent yet." %}
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

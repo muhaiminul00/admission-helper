@@ -1,0 +1,89 @@
+{% load ui_tags %}
+<div id="compare-content">
+
+{% if has_duplicates %}
+    <section class="mb-6">
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+            <h2 class="text-lg font-medium text-red-800 mb-2">Duplicate Keys Found</h2>
+            <ul class="text-sm text-red-700 space-y-1">
+                {% for entity, keys in duplicates.items %}
+                    {% if keys %}
+                        <li><strong>{{ entity }}:</strong> {{ keys }}</li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+    </section>
+{% endif %}
+
+{% for section in sections %}
+    <section class="mb-6">
+        <h2 class="text-lg font-medium mb-3 text-gray-800">{{ section.label }}</h2>
+        <div class="grid gap-3 sm:grid-cols-4 mb-3">
+            {% with data=section.data %}
+                <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-center">
+                    <p class="text-xs text-emerald-700 uppercase tracking-wide">Added</p>
+                    <p class="text-xl font-semibold text-emerald-800">{{ data.added|length|default:0 }}</p>
+                </div>
+                <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-center">
+                    <p class="text-xs text-amber-700 uppercase tracking-wide">Modified</p>
+                    <p class="text-xl font-semibold text-amber-800">{{ data.modified|length|default:0 }}</p>
+                </div>
+                <div class="bg-red-50 border border-red-200 rounded-lg p-3 text-center">
+                    <p class="text-xs text-red-700 uppercase tracking-wide">Removed</p>
+                    <p class="text-xl font-semibold text-red-800">{{ data.removed|length|default:0 }}</p>
+                </div>
+                <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 text-center">
+                    <p class="text-xs text-gray-600 uppercase tracking-wide">Unchanged</p>
+                    <p class="text-xl font-semibold text-gray-700">{{ data.unchanged|length|default:0 }}</p>
+                </div>
+            {% endwith %}
+        </div>
+
+        {% if section.data.added %}
+            <ul class="bg-white border border-gray-200 rounded-lg divide-y text-sm mb-2">
+                {% for entry in section.data.added|slice:":15" %}
+                    <li class="p-2 bg-emerald-50/50"><span class="text-emerald-700 font-medium">+</span> {{ entry.key }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        {% if section.data.modified %}
+            <ul class="bg-white border border-gray-200 rounded-lg divide-y text-sm mb-2">
+                {% for entry in section.data.modified|slice:":15" %}
+                    <li class="p-2 bg-amber-50/50">
+                        <span class="text-amber-700 font-medium">~</span> {{ entry.key }}
+                        <span class="text-gray-500 text-xs">({{ entry.changes.keys|join:", " }})</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        {% if section.data.removed %}
+            <ul class="bg-white border border-gray-200 rounded-lg divide-y text-sm">
+                {% for entry in section.data.removed|slice:":15" %}
+                    <li class="p-2 bg-red-50/50"><span class="text-red-700 font-medium">-</span> {{ entry.key }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </section>
+{% empty %}
+    {% include "components/empty_state.html" with message="No sections match this filter." %}
+{% endfor %}
+
+<section>
+    <h2 class="text-lg font-medium mb-3 text-gray-800">Routine Events</h2>
+    <div class="{% card_classes %} text-sm">
+        <p>{{ routine_events.total_rows }} total rows in routine.csv:
+            {% for event_type, count in routine_events.by_event_type.items %}
+                {{ count }} {{ event_type }}{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+        </p>
+        <p class="text-gray-500 mt-1">
+            CLASS rows (become Lectures): {{ routine_events.class_rows_added }} added,
+            {{ routine_events.class_rows_modified }} modified,
+            {{ routine_events.class_rows_removed }} removed,
+            {{ routine_events.class_rows_unchanged }} unchanged
+        </p>
+    </div>
+</section>
+
+</div>

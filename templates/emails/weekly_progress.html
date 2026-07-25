@@ -1,0 +1,20 @@
+{% extends "emails/base.html" %}
+{% block subject %}Weekly Progress — Routine Week {{ week_number }}{% endblock %}
+{% block content %}
+<h1 style="font-size:20px;margin:0 0 4px;">Routine Week {{ week_number }} — Complete!</h1>
+<p style="margin:0 0 16px;color:#4b5563;">{{ monday|date:"M j" }} – {{ sunday|date:"M j, Y" }}</p>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;color:#374151;">
+<tr><td style="padding:4px 0;">Lectures completed</td><td style="padding:4px 0;text-align:right;">{{ completed_lectures }} / {{ total_lectures }}</td></tr>
+<tr><td style="padding:4px 0;">Revisions completed</td><td style="padding:4px 0;text-align:right;">{{ completed_revisions }}</td></tr>
+<tr><td style="padding:4px 0;">Exams this week</td><td style="padding:4px 0;text-align:right;">{{ exams_completed_count }}</td></tr>
+<tr><td style="padding:4px 0;">Overall progress</td><td style="padding:4px 0;text-align:right;">{{ overall_percentage }}%</td></tr>
+</table>
+
+{% if next_week_number %}
+<h2 style="font-size:16px;margin:16px 0 8px;">Coming Up: Routine Week {{ next_week_number }}</h2>
+<p style="margin:0;">{{ next_week_lecture_count }} lecture{{ next_week_lecture_count|pluralize }}, {{ next_week_exam_count }} exam{{ next_week_exam_count|pluralize }} scheduled.</p>
+{% endif %}
+
+<p style="margin:16px 0 0;color:#4b5563;">Keep up the great work — every completed lecture brings you closer to being fully exam-ready.</p>
+{% endblock %}
