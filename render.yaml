@@ -74,8 +74,15 @@ services:
       npm --prefix theme/static_src ci &&
       npm --prefix theme/static_src run build &&
       python manage.py collectstatic --noinput
-    preDeployCommand: python manage.py migrate --noinput
+    # Milestone 17.1: preDeployCommand is also a paid-tier-only Render
+    # feature ("pre-deploy command is not supported for free tier
+    # services") - migration is folded into startCommand instead, so
+    # it still runs before gunicorn starts on every deploy/restart.
+    # Django migrations are safe to re-run (no-op if already applied),
+    # so this is equivalent in effect, just triggered from a different
+    # lifecycle hook.
     startCommand: >-
+      python manage.py migrate --noinput &&
       gunicorn admission_helper.wsgi
       --bind 0.0.0.0:$PORT
       --workers ${WEB_CONCURRENCY:-2}
