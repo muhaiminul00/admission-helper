@@ -47,6 +47,21 @@ envVarGroups:
         sync: false
       - key: EMAIL_HOST_PASSWORD
         sync: false
+      # Milestone 17.1: Render Free has no Shell and no One-Off Jobs
+      # access (both are paid-tier-only), so `python manage.py
+      # createsuperuser` cannot be run interactively against the
+      # deployed instance. `core/management/commands/
+      # ensure_superuser.py` (invoked from startCommand below) reads
+      # these three and idempotently creates/updates that one
+      # superuser on every deploy. Optional: leave unset and the
+      # command silently no-ops - only set these if you have no other
+      # way to reach the Django admin/staff pages.
+      - key: DJANGO_SUPERUSER_USERNAME
+        sync: false
+      - key: DJANGO_SUPERUSER_EMAIL
+        sync: false
+      - key: DJANGO_SUPERUSER_PASSWORD
+        sync: false
       # Matches this project's default (admission_helper/settings.py) -
       # only change this if the admission cycle being tracked is ever
       # in a different timezone. If you do, every cron `schedule`
@@ -81,8 +96,18 @@ services:
     # Django migrations are safe to re-run (no-op if already applied),
     # so this is equivalent in effect, just triggered from a different
     # lifecycle hook.
+    #
+    # ensure_superuser and import_csv are here for the same reason:
+    # Render Free has no Shell/One-Off Jobs to run them interactively
+    # after deploy (see the env var comments above and
+    # docs/Deployment.md). Both are safe to run on every restart -
+    # ensure_superuser no-ops if its env vars are unset, and
+    # import_csv is idempotent (update_or_create keyed on each model's
+    # natural identity), so re-running it never duplicates data.
     startCommand: >-
       python manage.py migrate --noinput &&
+      python manage.py ensure_superuser &&
+      python manage.py import_csv &&
       gunicorn admission_helper.wsgi
       --bind 0.0.0.0:$PORT
       --workers ${WEB_CONCURRENCY:-2}
@@ -103,9 +128,12 @@ services:
   # them cannot be applied at all on this plan, so they are removed
   # here rather than merely disabled. The five reminder commands
   # themselves (reminders/management/commands/send_*.py) are
-  # unchanged and still fully functional when run manually (e.g. via
-  # Render's one-off Shell) or by whatever scheduler is introduced in
-  # a follow-up milestone.
+  # unchanged and still fully functional when run manually (Render
+  # Free has no Shell/One-Off Jobs access, so "manually" means adding
+  # them to startCommand the same way ensure_superuser/import_csv are
+  # above, or running them from a local machine against
+  # DATABASE_URL) or by whatever scheduler is introduced in a
+  # follow-up milestone.
   #
   # Kept for when scheduling is reintroduced (a paid Render plan, or
   # an external scheduler): each job would run one of the five
