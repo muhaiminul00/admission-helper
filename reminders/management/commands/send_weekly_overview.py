@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand
 
+from reminders.management._report import report_results
 from reminders.models import ReminderLog
 from reminders.services import engine
 
@@ -11,8 +12,7 @@ class Command(BaseCommand):
         parser.add_argument("--dry-run", action="store_true", help="Show what would be sent without sending it.")
 
     def handle(self, *args, **options):
-        sent = engine.run(
+        results = engine.run(
             reminder_types=[ReminderLog.ReminderType.WEEKLY_OVERVIEW], dry_run=options["dry_run"]
         )
-        verb = "Would send" if options["dry_run"] else "Sent"
-        self.stdout.write(self.style.SUCCESS(f"{verb} {len(sent)} weekly overview email(s)."))
+        report_results(self, results, "weekly overview email(s)", options["dry_run"])

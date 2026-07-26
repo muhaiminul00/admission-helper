@@ -12,11 +12,13 @@ from django.core.management import call_command
 from django.test import TestCase, override_settings
 from django.utils import timezone
 
-from core.test_utils import build_sample_dataset
+from core.test_utils import build_sample_dataset, create_user
 from progress.models import RevisionSchedule
 from progress.services import revision as revision_service
+from reminders.management._report import report_results
 from reminders.models import ReminderLog
 from reminders.services import engine
+from reminders.services.job import ReminderJob
 
 
 @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
@@ -70,6 +72,72 @@ class SendDailyAgendaCommandTests(TestCase):
         )
         self.assertEqual(len(sent), 1)  # job was generated and "sent" (logged)...
         self.assertEqual(len(mail.outbox), 0)  # ...but delivery itself no-opped
+
+
+class _FakeCommand:
+    """A minimal stand-in for a `BaseCommand` instance - just enough
+    surface (`.stdout.write`, `.style.SUCCESS`/`.WARNING`) for
+    `report_results()` to run against, without invoking a real
+    management command end to end (which would depend on whichever
+    reminder happens to be due at the real wall-clock time the test
+    runs)."""
+
+    def __init__(self):
+        self.stdout = StringIO()
+        from django.core.management.color import no_style
+        self.style = no_style()
+
+
+class ReportResultsTests(TestCase):
+    """Milestone 17, Phase 2 - production observability: a scheduled
+    job's own log output must show which deliveries failed and why,
+    not just a bare success count."""
+
+    def setUp(self):
+        self.user = create_user()
+
+    def test_all_successful_reports_plain_count(self):
+        command = _FakeCommand()
+        results = [engine.ReminderResult(job=ReminderJob(self.user, "daily_agenda", "k1"), delivered=True)]
+        report_results(command, results, "daily agenda email(s)", dry_run=False)
+        output = command.stdout.getvalue()
+        self.assertIn("Sent 1 daily agenda email(s).", output)
+        self.assertNotIn("FAILED", output)
+
+    def test_failure_is_reported_with_recipient_and_error(self):
+        self.user.email = "student@example.com"
+        command = _FakeCommand()
+        results = [
+            engine.ReminderResult(
+                job=ReminderJob(self.user, "daily_agenda", "k1"), delivered=False, error="SMTP connection refused",
+            ),
+        ]
+        report_results(command, results, "daily agenda email(s)", dry_run=False)
+        output = command.stdout.getvalue()
+        self.assertIn("Sent 0 daily agenda email(s).", output)
+        self.assertIn("FAILED -> student@example.com: SMTP connection refused", output)
+
+    def test_mixed_success_and_failure_counts_only_successes_in_summary(self):
+        other = create_user(username="student2")
+        command = _FakeCommand()
+        results = [
+            engine.ReminderResult(job=ReminderJob(self.user, "daily_agenda", "k1"), delivered=True),
+            engine.ReminderResult(
+                job=ReminderJob(other, "daily_agenda", "k2"), delivered=False, error="Refused",
+            ),
+        ]
+        report_results(command, results, "daily agenda email(s)", dry_run=False)
+        output = command.stdout.getvalue()
+        self.assertIn("Sent 1 daily agenda email(s).", output)
+        self.assertIn("1 daily agenda email(s) failed to send", output)
+
+    def test_dry_run_never_reports_failures_even_if_present(self):
+        command = _FakeCommand()
+        results = [engine.ReminderResult(job=ReminderJob(self.user, "daily_agenda", "k1"), delivered=None)]
+        report_results(command, results, "daily agenda email(s)", dry_run=True)
+        output = command.stdout.getvalue()
+        self.assertIn("Would send 1 daily agenda email(s).", output)
+        self.assertNotIn("FAILED", output)
 
 
 @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
