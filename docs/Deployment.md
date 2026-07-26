@@ -12,9 +12,8 @@ web: gunicorn admission_helper.wsgi --bind 0.0.0.0:$PORT --workers ${WEB_CONCURR
 ## Deploying via `render.yaml` (recommended)
 
 `render.yaml` at the repository root defines everything Render needs
-to create from scratch: the web service, a managed PostgreSQL
-database, and five Scheduled Jobs (one per reminder command) - see
-Section 6 below for why those five specific schedules. Applying it:
+to create from scratch: the web service and a managed PostgreSQL
+database. Applying it:
 
 1. Render dashboard → **New → Blueprint**.
 2. Connect this GitHub repository, branch `main`.
@@ -27,15 +26,38 @@ Section 6 below for why those five specific schedules. Applying it:
 `SECRET_KEY` is generated automatically by Render (`generateValue:
 true` in `render.yaml`) - you never see or set it yourself.
 `DATABASE_URL` is wired automatically from the created Postgres
-instance to every service that needs it (web + all five cron jobs) -
-also never entered manually.
+instance to the web service - also never entered manually.
 
 Render validates `render.yaml` against its own current Blueprint
 schema at apply time. If any field is rejected, that means Render's
 schema has moved on since this file was written - check the error
 message and Render's own Blueprint reference before assuming the
-underlying deployment plan (one web service, one Postgres instance,
-five cron jobs, the commands/schedule described below) is wrong.
+underlying deployment plan (one web service, one Postgres instance) is
+wrong.
+
+### Render Free plan: no Scheduled Jobs (Milestone 17.1)
+
+`render.yaml` originally also defined five Render Scheduled Jobs
+(`type: cron`), one per reminder command. **Render's Free plan
+rejects Blueprints containing any `type: cron` service outright** -
+apply fails immediately with `plan free not valid for service type
+cron`, before creating anything at all. Those five job definitions
+have been removed from `render.yaml` so the Blueprint applies cleanly
+on Free.
+
+This has no effect on the application itself: the five `send_*`
+reminder commands (`reminders/management/commands/`) are unchanged,
+fully idempotent, and safe to run manually at any time (e.g. via
+Render's one-off Shell, or locally against the production database).
+What's missing on Free is *automatic scheduling* - nothing invokes
+those commands on its own yet. Reminder scheduling is deliberately
+deferred to a follow-up milestone rather than solved with a
+workaround here (e.g. a background thread inside the web process,
+which would violate this milestone's "no alternative schedulers"
+rule and behave unreliably on a service that can spin down when
+idle). See Section 6 below for the schedule this project will use
+once a scheduling mechanism (a paid Render plan, or an external
+scheduler) is introduced.
 
 ## Manual Setup (Railway, or Render without a Blueprint)
 
@@ -125,10 +147,32 @@ specifically for this.
 
 ### 6. Reminder Scheduler
 
-Nothing sends reminders automatically until a scheduler runs the five
-`send_*` management commands - `render.yaml` configures this as five
-Render Scheduled Jobs. The schedules are derived from each command's
-actual trigger logic, not guessed:
+**Status on Render Free (Milestone 17.1): not yet configured.**
+Nothing sends reminders automatically until something runs the five
+`send_*` management commands on a schedule. `render.yaml` no longer
+defines this on Render (see "Render Free plan: no Scheduled Jobs"
+above - the Free plan doesn't support `type: cron` services at all).
+Until a scheduling mechanism is introduced (a paid Render plan's
+Scheduled Jobs, or an external scheduler calling into the app), run
+the five commands manually as needed via Render's Shell:
+
+```bash
+python manage.py send_daily_agenda
+python manage.py send_weekly_overview
+python manage.py send_exam_reminders
+python manage.py send_revision_reminders
+python manage.py send_weekly_progress
+```
+
+Every command is idempotent (`ReminderLog`'s unique constraint), so
+running them by hand - even repeatedly, even out of order - never
+double-sends anything; a user who already received a given reminder is
+silently skipped.
+
+The schedule below is the target this project will use once automatic
+scheduling is reintroduced - derived from each command's actual
+trigger logic, not guessed, and unchanged from the original Milestone
+17 design:
 
 ```text
 send_daily_agenda        0 * * * *   (hourly)
@@ -207,9 +251,12 @@ After the first deploy, confirm:
   arrives.
 - `manage.py migrate` ran cleanly (check the deploy/pre-deploy step's
   logs).
-- Each of the five Scheduled Jobs has run at least once (Render →
-  the job → Logs) and reports a sane count with no unexpected
-  `FAILED` lines.
+- On Render Free (Milestone 17.1): no Scheduled Jobs exist yet - see
+  Section 6 above. Confirm reminders instead by running one `send_*`
+  command manually via Render's Shell and checking its output. On a
+  plan that supports Scheduled Jobs, confirm each of the five has run
+  at least once (Render → the job → Logs) and reports a sane count
+  with no unexpected `FAILED` lines.
 
 See `RELEASE_CHECKLIST.md` for the complete pre/post-deploy checklist
 this project follows for every release, not just v1.0.0.
