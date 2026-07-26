@@ -118,6 +118,7 @@ below is specifically what `render.yaml` cannot fill in for you
 | `EMAIL_HOST_PASSWORD` | Gmail **app password** (not your account password) | **Yes** - generate one at your Google Account's App Passwords page | Yes |
 | `TIME_ZONE` | IANA timezone every date/time calculation uses | No - `render.yaml` sets `Asia/Dhaka` (change only if the admission cycle being tracked moves timezone) | Yes |
 | `WEB_CONCURRENCY` | Gunicorn worker count | No - defaults to `2`; raise it only if the Render plan has the memory for more | Not applicable (Procfile-only) |
+| `DJANGO_SUPERUSER_USERNAME`/`_EMAIL`/`_PASSWORD` | Bootstraps one admin/staff user on every deploy (see Section 7) | **Optional** - only needed on Render Free, since there's no Shell/One-Off Jobs access to run `createsuperuser` interactively; leave all three unset and `ensure_superuser` silently no-ops | Not applicable (Render Free workaround only) |
 
 Production secrets (`EMAIL_HOST_PASSWORD` above, and anything like it)
 belong **only** in Render's Environment Variables - never in a GitHub
@@ -231,16 +232,41 @@ Scheduled Job's logs directly if a send count looks wrong.
 ### 7. Superuser Creation
 
 Staff access (Datasets, Reminder Administration) requires a Django
-superuser or a regular user with `is_staff=True`. Create one after the
-first deploy:
+superuser or a regular user with `is_staff=True`. Normally:
 
 ```bash
 python manage.py createsuperuser
 ```
 
-Run this via the platform's shell/one-off-job feature (Render "Shell",
+run via the platform's shell/one-off-job feature (Render "Shell",
 Railway "Run a command") - not as part of the release/migrate step,
 since it needs interactive input.
+
+**On Render Free (Milestone 17.1): neither Shell nor One-Off Jobs are
+available** (both are paid-tier-only), so there is no way to run the
+above interactively against the deployed instance. `render.yaml`'s
+`startCommand` instead runs:
+
+```bash
+python manage.py ensure_superuser
+```
+
+on every deploy/restart - a small custom command
+(`core/management/commands/ensure_superuser.py`) that reads
+`DJANGO_SUPERUSER_USERNAME` / `DJANGO_SUPERUSER_EMAIL` /
+`DJANGO_SUPERUSER_PASSWORD` from the environment and idempotently
+creates-or-updates exactly that one user as a superuser. Set those
+three in the Render dashboard (see the checklist in Section 2) if you
+have no other way to reach the admin/staff pages; leave them unset and
+the command silently does nothing. Because it runs on every restart,
+changing `DJANGO_SUPERUSER_PASSWORD` and redeploying is also how you
+reset that account's password if you ever lose it - there is no
+"forgot password" flow needed for this one bootstrap account.
+
+If you deploy somewhere that *does* have shell/one-off-job access
+(Railway, or a paid Render plan), running `createsuperuser`
+interactively works exactly as before and `ensure_superuser` is not
+required.
 
 ### 8. Initial Data
 
@@ -254,6 +280,14 @@ python manage.py import_csv
 
 Run `import_csv --preview` first to validate without writing anything,
 and see `06_CSV_Import_Specification.md` for the exact file formats.
+
+**On Render Free (Milestone 17.1)**, this also runs automatically as
+part of `startCommand` on every deploy/restart, for the same reason as
+`ensure_superuser` above (no Shell/One-Off Jobs to run it by hand).
+It's safe to run repeatedly: every importer uses `update_or_create()`
+keyed on each model's natural identity, so re-running never creates
+duplicate data - if the CSVs at the repo root are ever updated and
+committed, the next deploy picks up the changes automatically too.
 
 ### 9. Health Check
 
