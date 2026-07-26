@@ -2,13 +2,15 @@
 
 ## Current Milestone
 
-Milestone 15.3 — Version 1.0 Release Preparation
+Milestone 17 — Production Deployment (Render)
 
 Status:
-✅ Completed
+🟡 Code-side work completed; live deployment awaiting manual Render
+dashboard steps (Blueprint apply, secret entry) - see this milestone's
+entry below and the deployment report delivered alongside it.
 
 Completion Date:
-2026-07-26
+Code-side: 2026-07-26. Live deployment: pending.
 
 ---
 
@@ -38,6 +40,8 @@ Completion Date:
 - [x] Milestone 15.1 — Reminder Administration, Theme System & UX Polish
 - [x] Milestone 15.2 — Design System Refinement & Multi-Dimensional Progress
 - [x] Milestone 15.3 — Version 1.0 Release Preparation
+- [x] Milestone 16 — GitHub & Production Repository Setup
+- [~] Milestone 17 — Production Deployment (Render) - code-side complete, live deployment pending manual steps
 
 ---
 
@@ -3969,6 +3973,165 @@ before.
 
 ---
 
+### Milestone 16 — GitHub & Production Repository Setup
+
+Infrastructure only, no application code changed. Created the GitHub
+repository (`muhaiminul00/admission-helper`, private) via `gh repo
+create` per the milestone's explicit instruction not to use the
+browser; pushed `main`/`develop`/the `v1.0.0` tag (all three verified
+present via `gh api`, not just assumed from a successful `git push`);
+set the repository description, topics (`django`, `education`,
+`study-planner`, `admission-helper`, `python`, `tailwindcss`,
+`productivity`), and confirmed the default branch is `main`. Added
+`.github/ISSUE_TEMPLATE/{bug_report,feature_request}.md`,
+`.github/pull_request_template.md`, `.github/CODE_OF_CONDUCT.md`, and
+`.github/CONTRIBUTING.md`, all cross-referencing `docs/GitWorkflow.md`
+rather than restating its branching rules. Created the first GitHub
+Release (`v1.0.0`, notes populated from `docs/ReleaseNotes-v1.0.0.md`).
+
+Consistent with the "no direct commits to `main`" rule
+`docs/GitWorkflow.md` established the milestone before: the community
+files were committed on `feature/github-repository-setup`, merged
+into both `develop` and `main` (not committed straight to `main`), and
+both CI runs on the resulting merges passed before this was considered
+done. Branch protection on `main` was attempted via `gh api
+.../branches/main/protection` and rejected by GitHub - private
+repositories require GitHub Pro (or public visibility) for protected
+branches - documented as a Known Issue/manual step rather than
+silently skipped or worked around by making the repository public
+without being asked to.
+
+**Verification.** All 3 GitHub Actions runs triggered during this
+milestone (initial push, merge to `develop`, merge to `main`)
+completed `success`. Repository/branches/tags/release all confirmed
+via `gh api`/`gh release view`, not assumed from command exit codes
+alone.
+
+---
+
+### Milestone 17 — Production Deployment (Render)
+
+**Scope note:** this environment has no Render CLI, no Render API
+token, and no browser access - every phase requiring actual Render
+account/dashboard interaction (creating the Blueprint instance,
+entering secret environment variable values, triggering the first
+deploy, running one-off commands like `createsuperuser`, viewing live
+logs) cannot be performed here and was handed to the user with exact
+manual steps instead, per the milestone's own explicit instruction to
+stop and explain rather than assume account access. What follows is
+the code-side work that *is* completable without that access: Phases
+1-3 and 5's checklist, in full; Phases 4/6/7/8/9's actual execution is
+the user's remaining manual work (see the deployment report delivered
+alongside this milestone for the exact current status).
+
+**Phase 1 - Production Readiness Audit.** Found one real, deploy-
+breaking gap: the `Procfile`'s gunicorn command never bound to
+`0.0.0.0:$PORT` - it would have started successfully but been
+completely unreachable by Render's routing layer, since gunicorn
+defaults to `127.0.0.1:8000` with no `--bind` flag. Fixed, along with
+adding an explicit worker count (`WEB_CONCURRENCY`, default 2, tunable
+per the Render plan's available memory), a request timeout, and
+access/error logging - none of this existed before, meaning a first
+deploy attempt without this milestone's fix would have failed silently
+(the process starts, health checks against the wrong bind address
+fail, Render reports a boot failure with no obvious cause). Also added
+a `LOGGING` formatter (timestamp/level/logger name - the previous
+config emitted bare unstamped messages, unusable for correlating
+issues in a real log stream) and `CONN_HEALTH_CHECKS` on the database
+connection (so a stale persistent connection reconnects transparently
+instead of surfacing as a request-time error). Everything else audited
+- `DEBUG`/`SECRET_KEY`/`ALLOWED_HOSTS` handling, WhiteNoise's DEBUG-
+conditional storage backend, `SECURE_PROXY_SSL_HEADER`, HSTS/cookie
+security, PostgreSQL via `dj_database_url` - was already correct from
+Milestones 14/15.3 and needed no change.
+
+**Phase 2 - Reminder System Audit.** All five `send_*` commands
+already had solid idempotency (`ReminderLog`'s unique `(user,
+reminder_type, reference_key)` constraint - a real database
+constraint, not an in-memory check, confirmed still true by re-reading
+`engine.py`) and clean exception handling (a single delivery's SMTP
+failure is caught and logged per-job, never crashes the whole run -
+Milestone 15.1's design). The one genuine gap for a *production*
+context specifically: every command's own stdout only ever reported a
+bare count ("Sent 3 daily agenda email(s)."), never which deliveries
+(if any) failed or why - meaning watching a Render Scheduled Job's
+logs directly would never reveal a problem that Reminder
+Administration's Activity Log would. Fixed via a small shared
+`reminders/management/_report.py: report_results()` helper, reused by
+all five commands (not duplicated five times) - failures now print as
+a `FAILED -> <recipient>: <error>` line beneath the summary. Nothing
+about generation, trigger conditions, or delivery semantics changed -
+this is purely additive log output.
+
+**Phase 3 - Render Configuration.** `render.yaml` (a Render Blueprint)
+defines the web service, a managed PostgreSQL database, and five
+Scheduled Jobs - one per reminder command - as infrastructure-as-code,
+per the milestone's "hybrid" instruction (config in the repo, secrets
+only in the dashboard). `SECRET_KEY` is Render-generated
+(`generateValue: true` - never present in any commit); `DATABASE_URL`
+is wired automatically from the Blueprint's own database to every
+service that needs it. The four `sync: false` variables (`ALLOWED_HOSTS`,
+`CSRF_TRUSTED_ORIGINS`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`) are
+the only values Render will prompt for on first apply - see Phase 5
+below.
+
+Cron schedules were derived from each generator's actual trigger
+logic, not guessed, per the milestone's explicit instruction: `send_daily_agenda`
+runs hourly (`0 * * * *`) because `NotificationPreference.
+daily_agenda_time` is per-user and configurable, so only an hourly
+cadence catches every setting. The other four run once daily at
+`0 3 * * *` (03:00 UTC = 09:00 `Asia/Dhaka`) rather than at midnight
+UTC specifically because `reminders/services/exams.py`'s exam-day-
+morning reminder additionally requires the current wall-clock time to
+be past `EXAM_DAY_MORNING_TIME` (08:00 `Asia/Dhaka`) - a schedule at,
+say, 00:00 UTC (06:00 Dhaka) would run before that gate and silently
+produce zero exam-day reminders every single day, not because of a
+bug but because the generator would correctly (if unhelpfully, given
+the schedule) decide "not yet morning." This reasoning - and the
+general principle that a fixed-offset timezone (Dhaka is UTC+6, no
+DST) never crosses a UTC calendar-day boundary at a mid-day UTC hour,
+so no cron-side day-of-week logic is needed at all - is documented in
+both `render.yaml`'s own comments and `docs/Deployment.md`, not left
+implicit.
+
+**Phase 5 - Environment Variables.** `docs/Deployment.md` gained a
+checklist table distinguishing what `render.yaml` handles automatically
+from what requires manual dashboard entry - narrowing what the user
+actually needs to do to four real values (`ALLOWED_HOSTS`,
+`CSRF_TRUSTED_ORIGINS`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`),
+none of which were invented here - every one is either a fact only
+knowable after the Render service exists (its assigned domain) or a
+real credential the user must supply themselves.
+
+**Phases 4/6/7/8/9 - Manual Steps.** Not performed in this session -
+no Render CLI, API token, or browser access exists in this
+environment. Handed to the user as an explicit, ordered set of manual
+steps (Render dashboard Blueprint apply, entering the four `sync:
+false` variables, verifying the first deploy, confirming all five
+Scheduled Jobs ran, `createsuperuser`, and the Phase 9 smoke-test
+checklist) - see the deployment report delivered alongside this
+milestone for the exact current list.
+
+**Testing.** 4 new tests (`reminders/tests_commands.py:
+ReportResultsTests`) covering `report_results()`'s all-success,
+all-failure, mixed, and dry-run-suppresses-failure-detail cases
+directly (not through `call_command()`, which would depend on
+whichever reminder happens to be due at the real wall-clock time a
+test runs - the same wall-clock-independence principle Milestone 15's
+own `current_time` parameter exists for). Full suite re-run: 533/533
+passing (529 before this milestone).
+
+**Verification.** `manage.py check` - clean. `manage.py
+makemigrations --check --dry-run` - no changes (no model touched).
+`render.yaml` parsed successfully with PyYAML as a syntax sanity
+check (not a substitute for Render's own schema validation at apply
+time, which this environment cannot perform). Work committed on
+`feature/render-production-deployment`, merged into both `develop`
+and `main` (never committed directly to `main`), both pushed; all
+resulting CI runs passing.
+
+---
+
 ## Pending Milestones
 
 - [x] ~~Subjects (dedicated subject list / chapter browsing pages — not
@@ -4929,15 +5092,15 @@ before.
 
 ## Testing
 
-`python manage.py test` — **529 tests, all passing** (492 after
-Milestone 15.1; +37 for Milestone 15.2's design system/progress-system
-refinement). Breakdown: `core`
+`python manage.py test` — **533 tests, all passing** (529 after
+Milestone 15.3/16; +4 for Milestone 17's `ReportResultsTests`, covering
+the reminder commands' new per-failure log detail). Breakdown: `core`
 20, `core` (UI) 50, `subjects` 12, `routines` 14, `routines`
 (dataset) 65, `routines` (timeline) 32, `routines` (navigation) 21,
 `routines` (archive) 24, `progress` 101, `progress` (revision) 62,
 `progress` (progress service) 20, `lectures` 13, `dashboard` 8,
 `reminders` 16, `reminders` (generators)
-28, `reminders` (emails) 7, `reminders` (commands) 11, `reminders`
+28, `reminders` (emails) 7, `reminders` (commands) 15, `reminders`
 (admin) 25. Covers: CSV importer (all 5
 stages, idempotency,
 duplicate/missing-column/missing-file errors, transactional rollback
@@ -5643,22 +5806,51 @@ polish change touch templates/`ui_tags.py` only - no query impact.
   numeric ceilings, this milestone didn't establish new fixed budgets
   for `/subjects/<pk>/`, `/progress/`, etc. Worth doing in a future
   pass if page growth ever makes it necessary.
+- **GitHub branch protection on `main` is not enabled** (Milestone 16)
+  - `gh api .../branches/main/protection` returned 403: private
+  repositories require GitHub Pro (or public visibility) for this
+  feature. `docs/GitWorkflow.md`'s branching discipline is followed
+  manually/by convention instead. Revisit if the repository ever goes
+  public or the account upgrades.
+- **Render Scheduled Jobs run on a fixed UTC schedule, not per-user
+  local time** (Milestone 17) - same root cause as the pre-existing
+  Milestone 15/15.1 Known Issue above (`EXAM_DAY_MORNING_TIME` and the
+  Daily Agenda's delivery-time gate read server/app-configured
+  `TIME_ZONE`, not each user's own `NotificationPreference.timezone`);
+  now more visible operationally, since the cron schedule itself
+  (documented in `docs/Deployment.md`, Section 6) was deliberately
+  derived around `Asia/Dhaka`'s fixed UTC+6 offset rather than solved
+  properly for a multi-timezone user base. Acceptable for this
+  project's current single/few-user, single-timezone scope.
+- **`render.yaml` does not attach a persistent disk for `MEDIA_ROOT`**
+  (Milestone 17, Phase 3) - deliberately left as a manual step (see
+  `docs/Deployment.md` Section 4), since Render Blueprints don't
+  support disk attachment declaratively at the time this was written;
+  without it, an uploaded Routine Archive PDF would be lost on the
+  next deploy. Must be added manually in the Render dashboard
+  (**Settings → Disks**) before relying on the Routine Archive feature
+  in production.
 
 ---
 
 ## Next Milestone
 
-No specific milestone requested yet. Both of the project's original
-objectives (study tracking, and reminders/notifications) are complete,
-Milestone 15.1 gave administrators the tools to safely operate the
-reminder system, and Milestone 15.2 refined the design system and
-replaced binary progress with a multi-dimensional one. Remaining
+Milestone 17's code-side work is complete (`render.yaml`, Procfile fix,
+logging, reminder-command observability, deployment docs); what
+remains is entirely the user's manual work in the Render dashboard -
+applying the Blueprint, entering the four `sync: false` environment
+variables, verifying the first deploy, confirming all five Scheduled
+Jobs, creating the production superuser, and running the Phase 9 smoke
+test - see the deployment report delivered alongside this milestone
+for the exact steps. Once live deployment is confirmed, remaining
 candidates from `07_Development_Roadmap.md` and this document's
 `Pending Milestones`/`Known Issues` sections: a focused table-polish
-pass (numeric alignment, per Milestone 13's Known Issues), actually
-registering/configuring the Render or Railway service and its
-scheduled jobs (an operational step, not a code change), per-user
-timezone-aware reminder scheduling (Milestone 15/15.1's Known Issues),
-a full page-by-page dark-mode sweep beyond the shared-component
-coverage Milestone 15.1/15.2 delivered, and resolving `auth_card.html`'s
-dead-code status (Milestone 15.2's Known Issues) - none requested yet.
+pass (numeric alignment, per Milestone 13's Known Issues), per-user
+timezone-aware reminder scheduling (Milestone 15/15.1's Known Issues -
+now more directly relevant, since the deployed Scheduled Jobs run on a
+fixed UTC schedule rather than per-user local time), a full
+page-by-page dark-mode sweep beyond the shared-component coverage
+Milestone 15.1/15.2 delivered, resolving `auth_card.html`'s dead-code
+status (Milestone 15.2's Known Issues), and enabling GitHub branch
+protection on `main` once the repository either goes public or moves
+to GitHub Pro (Milestone 16's Known Issue).
