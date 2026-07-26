@@ -162,6 +162,11 @@ DATABASES = {
         conn_max_age=600,
     )
 }
+# Milestone 17, Phase 1 - with persistent connections (conn_max_age
+# above), a connection that went stale/dropped between requests (e.g.
+# Postgres restarting a backend) would otherwise surface as a request-
+# time error; health checks probe and transparently reconnect instead.
+DATABASES['default']['CONN_HEALTH_CHECKS'] = True
 
 
 # Password validation
@@ -247,15 +252,25 @@ if not DEBUG:
     SECURE_HSTS_PRELOAD = True
 
 
-# Logging (Milestone 14, Phase 4). Plain console logging - the
-# deployment platform (Render/Railway) captures stdout/stderr directly,
-# so no file handlers or external logging service are needed.
+# Logging (Milestone 14, Phase 4; formatter added Milestone 17, Phase
+# 1 - a bare message with no timestamp/level/logger name is hard to
+# correlate against anything once real traffic is flowing). Plain
+# console logging - the deployment platform (Render/Railway) captures
+# stdout/stderr directly, so no file handlers or external logging
+# service are needed.
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'default': {
+            'format': '{asctime} {levelname} {name}: {message}',
+            'style': '{',
+        },
+    },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
+            'formatter': 'default',
         },
     },
     'root': {

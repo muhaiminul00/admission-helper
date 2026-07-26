@@ -1,0 +1,171 @@
+# Render Blueprint (Milestone 17, Phase 3) - Infrastructure as Code
+# for this project's Render deployment: one web service, one managed
+# PostgreSQL database, and five Scheduled Jobs (one per reminder
+# command). Applying this file (via the Render dashboard's "New Blueprint
+# Instance", pointed at this repository) creates/updates all of the
+# above from git - manual dashboard configuration should only ever be
+# needed for actual secret *values* (Phase 5), never for which
+# services/schedules exist.
+#
+# Schema note: written against Render's documented Blueprint spec as
+# of this milestone. Render's dashboard validates render.yaml on
+# apply and will flag any field it doesn't recognize - if it does,
+# see docs/Deployment.md's "Applying render.yaml" section before
+# assuming the file itself is wrong.
+
+envVarGroups:
+  - name: admission-helper-shared
+    envVars:
+      # generateValue: true - Render creates a real random secret on
+      # first apply; never a value this file (or any commit) contains.
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      # sync: false - must be entered once in the Render dashboard;
+      # never invented here, never committed. See Phase 5's checklist
+      # in docs/Deployment.md.
+      - key: ALLOWED_HOSTS
+        sync: false
+      - key: CSRF_TRUSTED_ORIGINS
+        sync: false
+      - key: EMAIL_HOST_USER
+        sync: false
+      - key: EMAIL_HOST_PASSWORD
+        sync: false
+      # Matches this project's default (admission_helper/settings.py) -
+      # only change this if the admission cycle being tracked is ever
+      # in a different timezone. If you do, every cron `schedule`
+      # below must be recalculated (they're derived from Asia/Dhaka's
+      # fixed UTC+6 offset - see the comment on each job).
+      - key: TIME_ZONE
+        value: Asia/Dhaka
+      - key: PYTHON_VERSION
+        value: "3.12.7"
+
+databases:
+  - name: admission-helper-db
+    databaseName: admission_helper
+    user: admission_helper
+    plan: free
+
+services:
+  # --- Web service --------------------------------------------------
+  - type: web
+    name: admission-helper
+    env: python
+    plan: free
+    buildCommand: >-
+      pip install -r requirements.txt &&
+      npm --prefix theme/static_src ci &&
+      npm --prefix theme/static_src run build &&
+      python manage.py collectstatic --noinput
+    preDeployCommand: python manage.py migrate --noinput
+    startCommand: >-
+      gunicorn admission_helper.wsgi
+      --bind 0.0.0.0:$PORT
+      --workers ${WEB_CONCURRENCY:-2}
+      --timeout 30
+      --access-logfile -
+      --error-logfile -
+    healthCheckPath: /health/
+    envVars:
+      - fromGroup: admission-helper-shared
+      - key: DATABASE_URL
+        fromDatabase:
+          name: admission-helper-db
+          property: connectionString
+
+  # --- Scheduled Jobs (Phase 7) --------------------------------------
+  # None of these need the Tailwind build or collectstatic - reminder
+  # emails are inline-styled HTML (see templates/emails/), never
+  # Tailwind classes, and a cron job never serves a static asset.
+  #
+  # Schedules are derived from each command's actual trigger logic
+  # (reminders/services/*.py), not guessed:
+  #
+  # - send-daily-agenda runs hourly (0 * * * *) because each user has
+  #   their own configurable delivery time (NotificationPreference.
+  #   daily_agenda_time) - only an hourly cadence catches every
+  #   possible setting reliably.
+  # - The other four are date-gated, not time-gated, EXCEPT exam
+  #   reminders' "exam day morning" case, which additionally requires
+  #   the current wall-clock time to be past EXAM_DAY_MORNING_TIME
+  #   (08:00, reminders/services/exams.py). "03:00 UTC" = "09:00 Asia/
+  #   Dhaka" for all four - safely past that 08:00 gate, and since a
+  #   +6:00 offset never crosses a UTC calendar-day boundary at this
+  #   hour, "today" in Dhaka always matches "today" in UTC at this
+  #   run time, so no day-of-week/date logic needs to think about
+  #   timezones at the cron layer - each command's own generator
+  #   (already timezone-aware via Django's TIME_ZONE) decides what's
+  #   actually due.
+
+  - type: cron
+    name: send-daily-agenda
+    env: python
+    plan: free
+    schedule: "0 * * * *"
+    buildCommand: pip install -r requirements.txt
+    startCommand: python manage.py send_daily_agenda
+    envVars:
+      - fromGroup: admission-helper-shared
+      - key: DATABASE_URL
+        fromDatabase:
+          name: admission-helper-db
+          property: connectionString
+
+  - type: cron
+    name: send-weekly-overview
+    env: python
+    plan: free
+    schedule: "0 3 * * *"
+    buildCommand: pip install -r requirements.txt
+    startCommand: python manage.py send_weekly_overview
+    envVars:
+      - fromGroup: admission-helper-shared
+      - key: DATABASE_URL
+        fromDatabase:
+          name: admission-helper-db
+          property: connectionString
+
+  - type: cron
+    name: send-exam-reminders
+    env: python
+    plan: free
+    schedule: "0 3 * * *"
+    buildCommand: pip install -r requirements.txt
+    startCommand: python manage.py send_exam_reminders
+    envVars:
+      - fromGroup: admission-helper-shared
+      - key: DATABASE_URL
+        fromDatabase:
+          name: admission-helper-db
+          property: connectionString
+
+  - type: cron
+    name: send-revision-reminders
+    env: python
+    plan: free
+    schedule: "0 3 * * *"
+    buildCommand: pip install -r requirements.txt
+    startCommand: python manage.py send_revision_reminders
+    envVars:
+      - fromGroup: admission-helper-shared
+      - key: DATABASE_URL
+        fromDatabase:
+          name: admission-helper-db
+          property: connectionString
+
+  - type: cron
+    name: send-weekly-progress
+    env: python
+    plan: free
+    schedule: "0 3 * * *"
+    buildCommand: pip install -r requirements.txt
+    startCommand: python manage.py send_weekly_progress
+    envVars:
+      - fromGroup: admission-helper-shared
+      - key: DATABASE_URL
+        fromDatabase:
+          name: admission-helper-db
+          property: connectionString
