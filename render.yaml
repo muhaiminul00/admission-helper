@@ -1,11 +1,25 @@
-# Render Blueprint (Milestone 17, Phase 3) - Infrastructure as Code
-# for this project's Render deployment: one web service, one managed
-# PostgreSQL database, and five Scheduled Jobs (one per reminder
-# command). Applying this file (via the Render dashboard's "New Blueprint
-# Instance", pointed at this repository) creates/updates all of the
+# Render Blueprint (Milestone 17, Phase 3; cron services removed in
+# Milestone 17.1) - Infrastructure as Code for this project's Render
+# deployment: one web service and one managed PostgreSQL database.
+# Applying this file (via the Render dashboard's "New Blueprint
+# Instance", pointed at this repository) creates/updates both of the
 # above from git - manual dashboard configuration should only ever be
 # needed for actual secret *values* (Phase 5), never for which
-# services/schedules exist.
+# services exist.
+#
+# Milestone 17.1: Render's Free plan does not support `type: cron`
+# services ("plan free not valid for service type cron"). The five
+# reminder Scheduled Jobs that were previously defined here have been
+# removed so the Blueprint validates and applies on Free. This does
+# NOT change any reminder logic, command, or trigger condition - the
+# five `send_*` management commands (reminders/management/commands/)
+# are untouched and fully idempotent; they simply have no scheduler
+# invoking them yet on this plan. Reminder scheduling on Render Free
+# is deferred to a follow-up milestone (see docs/Deployment.md,
+# "Reminder Scheduler" section, for the options being considered -
+# e.g. a paid plan, or an external scheduler hitting a management
+# endpoint). The original cron schedule derivation reasoning is kept
+# below for whenever scheduling is reintroduced.
 #
 # Schema note: written against Render's documented Blueprint spec as
 # of this milestone. Render's dashboard validates render.yaml on
@@ -76,96 +90,41 @@ services:
           name: admission-helper-db
           property: connectionString
 
-  # --- Scheduled Jobs (Phase 7) --------------------------------------
-  # None of these need the Tailwind build or collectstatic - reminder
-  # emails are inline-styled HTML (see templates/emails/), never
-  # Tailwind classes, and a cron job never serves a static asset.
+  # --- Scheduled Jobs: OMITTED on Render Free (Milestone 17.1) -------
+  # Render's Free plan rejects `type: cron` services outright ("plan
+  # free not valid for service type cron") - a Blueprint that includes
+  # them cannot be applied at all on this plan, so they are removed
+  # here rather than merely disabled. The five reminder commands
+  # themselves (reminders/management/commands/send_*.py) are
+  # unchanged and still fully functional when run manually (e.g. via
+  # Render's one-off Shell) or by whatever scheduler is introduced in
+  # a follow-up milestone.
   #
-  # Schedules are derived from each command's actual trigger logic
+  # Kept for when scheduling is reintroduced (a paid Render plan, or
+  # an external scheduler): each job would run one of the five
+  # `send_*` commands, needs no Tailwind build/collectstatic (reminder
+  # emails are inline-styled HTML - see templates/emails/), and its
+  # schedule is derived from the command's actual trigger logic
   # (reminders/services/*.py), not guessed:
   #
-  # - send-daily-agenda runs hourly (0 * * * *) because each user has
-  #   their own configurable delivery time (NotificationPreference.
-  #   daily_agenda_time) - only an hourly cadence catches every
+  # - send_daily_agenda: hourly (0 * * * *) - each user has their own
+  #   configurable delivery time (NotificationPreference.
+  #   daily_agenda_time), so only an hourly cadence catches every
   #   possible setting reliably.
-  # - The other four are date-gated, not time-gated, EXCEPT exam
-  #   reminders' "exam day morning" case, which additionally requires
-  #   the current wall-clock time to be past EXAM_DAY_MORNING_TIME
-  #   (08:00, reminders/services/exams.py). "03:00 UTC" = "09:00 Asia/
-  #   Dhaka" for all four - safely past that 08:00 gate, and since a
-  #   +6:00 offset never crosses a UTC calendar-day boundary at this
-  #   hour, "today" in Dhaka always matches "today" in UTC at this
-  #   run time, so no day-of-week/date logic needs to think about
-  #   timezones at the cron layer - each command's own generator
-  #   (already timezone-aware via Django's TIME_ZONE) decides what's
-  #   actually due.
-
-  - type: cron
-    name: send-daily-agenda
-    env: python
-    plan: free
-    schedule: "0 * * * *"
-    buildCommand: pip install -r requirements.txt
-    startCommand: python manage.py send_daily_agenda
-    envVars:
-      - fromGroup: admission-helper-shared
-      - key: DATABASE_URL
-        fromDatabase:
-          name: admission-helper-db
-          property: connectionString
-
-  - type: cron
-    name: send-weekly-overview
-    env: python
-    plan: free
-    schedule: "0 3 * * *"
-    buildCommand: pip install -r requirements.txt
-    startCommand: python manage.py send_weekly_overview
-    envVars:
-      - fromGroup: admission-helper-shared
-      - key: DATABASE_URL
-        fromDatabase:
-          name: admission-helper-db
-          property: connectionString
-
-  - type: cron
-    name: send-exam-reminders
-    env: python
-    plan: free
-    schedule: "0 3 * * *"
-    buildCommand: pip install -r requirements.txt
-    startCommand: python manage.py send_exam_reminders
-    envVars:
-      - fromGroup: admission-helper-shared
-      - key: DATABASE_URL
-        fromDatabase:
-          name: admission-helper-db
-          property: connectionString
-
-  - type: cron
-    name: send-revision-reminders
-    env: python
-    plan: free
-    schedule: "0 3 * * *"
-    buildCommand: pip install -r requirements.txt
-    startCommand: python manage.py send_revision_reminders
-    envVars:
-      - fromGroup: admission-helper-shared
-      - key: DATABASE_URL
-        fromDatabase:
-          name: admission-helper-db
-          property: connectionString
-
-  - type: cron
-    name: send-weekly-progress
-    env: python
-    plan: free
-    schedule: "0 3 * * *"
-    buildCommand: pip install -r requirements.txt
-    startCommand: python manage.py send_weekly_progress
-    envVars:
-      - fromGroup: admission-helper-shared
-      - key: DATABASE_URL
-        fromDatabase:
-          name: admission-helper-db
-          property: connectionString
+  # - send_weekly_overview / send_exam_reminders /
+  #   send_revision_reminders / send_weekly_progress: once daily at
+  #   03:00 UTC (0 3 * * *). Not midnight UTC, specifically because
+  #   send_exam_reminders' "exam day morning" case additionally
+  #   requires the current wall-clock time to be past
+  #   EXAM_DAY_MORNING_TIME (08:00, reminders/services/exams.py).
+  #   "03:00 UTC" = "09:00 Asia/Dhaka" - safely past that 08:00 gate,
+  #   and since a +6:00 offset never crosses a UTC calendar-day
+  #   boundary at this hour, "today" in Dhaka always matches "today"
+  #   in UTC at this run time, so no day-of-week/date logic needs to
+  #   think about timezones at the scheduler layer - each command's
+  #   own generator (already timezone-aware via Django's TIME_ZONE)
+  #   decides what's actually due.
+  #
+  # Every command remains idempotent (ReminderLog's unique constraint)
+  # and safe to run manually in the meantime - see docs/Deployment.md,
+  # "Reminder Scheduler" section.
