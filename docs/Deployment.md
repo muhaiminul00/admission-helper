@@ -59,6 +59,28 @@ idle). See Section 6 below for the schedule this project will use
 once a scheduling mechanism (a paid Render plan, or an external
 scheduler) is introduced.
 
+### Render Free plan: no `preDeployCommand` either (Milestone 17.1)
+
+Render also rejected `render.yaml`'s `preDeployCommand` on the web
+service ("pre-deploy command is not supported for free tier
+services") - like Scheduled Jobs, this is a paid-tier-only Blueprint
+feature. The migration step (`python manage.py migrate --noinput`)
+has been moved into `startCommand` instead, so it now runs
+immediately before gunicorn starts, on every deploy and every service
+restart:
+
+```text
+startCommand: python manage.py migrate --noinput && gunicorn admission_helper.wsgi --bind 0.0.0.0:$PORT ...
+```
+
+This is safe: Django migrations are idempotent (a no-op if already
+applied), so running the command on every restart - not just every
+deploy - has no adverse effect. The one behavioral difference from
+`preDeployCommand`: a failed migration now also fails the web
+process's own boot, rather than being caught earlier in a separate
+pre-deploy step - check the web service's own deploy logs (not a
+separate pre-deploy log) if a deploy fails at this point.
+
 ## Manual Setup (Railway, or Render without a Blueprint)
 
 The steps below describe the same end state `render.yaml` automates -
@@ -249,8 +271,10 @@ After the first deploy, confirm:
 - Staff Reminder Administration (`/reminders/admin/`) shows "Ready"
   status for email configuration, and "Send Test Email" actually
   arrives.
-- `manage.py migrate` ran cleanly (check the deploy/pre-deploy step's
-  logs).
+- `manage.py migrate` ran cleanly (check the web service's own deploy
+  logs - on Render Free the migration runs as part of `startCommand`,
+  not a separate pre-deploy step; see "Render Free plan: no
+  `preDeployCommand` either" above).
 - On Render Free (Milestone 17.1): no Scheduled Jobs exist yet - see
   Section 6 above. Confirm reminders instead by running one `send_*`
   command manually via Render's Shell and checking its output. On a
@@ -263,11 +287,15 @@ this project follows for every release, not just v1.0.0.
 
 ## Recovery
 
-- **A deploy fails during migration**: Render's `preDeployCommand`
-  runs before traffic switches to the new instance, so a failed
-  migration blocks the deploy rather than serving a broken app -
-  check the deploy's logs, fix forward (a new migration, not editing
-  history), and redeploy.
+- **A deploy fails during migration**: on a plan with
+  `preDeployCommand` support, Render runs it before traffic switches
+  to the new instance, so a failed migration blocks the deploy rather
+  than serving a broken app. On Render Free (Milestone 17.1),
+  migration runs as the first step of `startCommand` instead - a
+  failed migration means the web process never finishes booting and
+  the deploy is reported as failed the same way. Either way: check the
+  deploy's logs, fix forward (a new migration, not editing history),
+  and redeploy.
 - **A Scheduled Job fails repeatedly**: check its logs for the
   `FAILED ->` lines the command now prints; a single user's bad email
   address never blocks anyone else's reminder (see Section 6), so a
