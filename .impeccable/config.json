@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "flat-type-hierarchy",
+        "value": "*",
+        "files": [
+          "templates/base.html"
+        ],
+        "createdAt": "2026-08-21T14:27:41.142Z",
+        "reason": "L86 is the sr-only skip-to-content link, invisible except on keyboard focus - not part of the page's visual type hierarchy, so comparing its text-sm to the nav's text-lg brand is not a meaningful check"
+      }
+    ]
+  }
+}

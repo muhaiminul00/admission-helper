@@ -5,8 +5,8 @@
    button; omit to render a plain link via action_url instead). {% endcomment %}
 <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
     <div>
-        <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">{{ title }}</h1>
-        {% if subtitle %}<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ subtitle }}</p>{% endif %}
+        <h1 class="text-2xl font-semibold text-ink">{{ title }}</h1>
+        {% if subtitle %}<p class="mt-1 text-sm text-ink-muted">{{ subtitle }}</p>{% endif %}
     </div>
     {% if action_label %}
         {% if action_hx_get %}
@@ -15,12 +15,12 @@
                     hx-target="{{ action_hx_target }}"
                     hx-swap="{{ action_hx_swap|default:'outerHTML' }}"
                     hx-indicator="#page-indicator"
-                    class="text-sm border border-gray-300 dark:border-slate-600 rounded px-3 py-1.5 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+                    class="text-sm border border-line rounded px-3 py-1.5 text-ink hover:bg-surface-quiet focus:outline-none focus-visible:ring-2 focus-visible:ring-accent">
                 {{ action_label }}
             </button>
         {% else %}
             <a href="{{ action_url }}"
-               class="text-sm text-blue-600 dark:text-blue-400 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
+               class="text-sm text-accent hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">
                 {{ action_label }}
             </a>
         {% endif %}

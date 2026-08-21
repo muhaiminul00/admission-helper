@@ -15,7 +15,7 @@
     <div class="{% card_classes %}">
         {% if chapter_row %}
             {% include "components/progress_meter.html" with progress=chapter_progress size="md" show_legend=True %}
-            <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+            <p class="text-sm text-ink-muted mt-2">
                 {{ chapter_row.completed }} / {{ chapter_row.total }} topics completed &middot;
                 {{ chapter_row.remaining }} remaining
             </p>
@@ -28,10 +28,10 @@
 {% if lectures %}
 <section class="mb-6">
     {% include "components/section_header.html" with title="Lectures Covering This Chapter" count=lectures|length %}
-    <ul class="bg-white border border-gray-200 rounded-lg divide-y text-sm">
+    <ul class="bg-surface border border-line rounded-lg divide-y text-sm">
         {% for lecture in lectures %}
-            <li class="p-3 hover:bg-gray-50">
-                <a href="{% url 'lecture-detail' lecture.lecture_code %}" class="text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
+            <li class="p-3 hover:bg-surface-quiet">
+                <a href="{% url 'lecture-detail' lecture.lecture_code %}" class="text-accent hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">
                     {{ lecture.lecture_code }}{% if lecture.title %} &mdash; {{ lecture.title }}{% endif %}
                 </a>
             </li>
@@ -43,10 +43,10 @@
 <section>
     {% include "components/section_header.html" with title="Topics" count=topics|length %}
     <div class="overflow-x-auto">
-        <table class="w-full bg-white border border-gray-200 rounded-lg text-sm">
+        <table class="w-full bg-surface border border-line rounded-lg text-sm">
             <caption class="sr-only">Topics in {{ chapter.name }}</caption>
             <thead>
-                <tr class="text-left border-b bg-gray-50">
+                <tr class="text-left border-b bg-surface-quiet">
                     <th scope="col" class="p-2">Topic</th>
                     <th scope="col" class="p-2">Lecture</th>
                     <th scope="col" class="p-2 text-center">Status</th>
@@ -54,10 +54,10 @@
             </thead>
             <tbody>
                 {% for topic in topics %}
-                    <tr class="border-b last:border-0 hover:bg-gray-50">
+                    <tr class="border-b last:border-0 hover:bg-surface-quiet">
                         <td class="p-2">{{ topic.topic }}</td>
                         <td class="p-2">
-                            <a href="{% url 'lecture-detail' topic.lecture.lecture_code %}" class="text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
+                            <a href="{% url 'lecture-detail' topic.lecture.lecture_code %}" class="text-accent hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">
                                 {{ topic.lecture.lecture_code }}
                             </a>
                         </td>
@@ -70,7 +70,7 @@
                         </td>
                     </tr>
                 {% empty %}
-                    <tr><td colspan="3" class="p-4 text-center text-gray-500">No topics recorded for this chapter.</td></tr>
+                    <tr><td colspan="3" class="p-4 text-center text-ink-muted">No topics recorded for this chapter.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

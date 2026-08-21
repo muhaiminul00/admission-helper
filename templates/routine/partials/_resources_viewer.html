@@ -3,7 +3,7 @@
     <div class="{% card_classes %}">
         {% if selected %}
             <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
-                <h2 class="text-lg font-medium text-gray-800 dark:text-gray-100">
+                <h2 class="text-lg font-medium text-ink">
                     {% if selected == latest %}Latest Routine{% else %}Routine &middot; {{ selected.label }}{% endif %}
                 </h2>
                 <a href="{% url 'routine-archive-file' selected.filename %}?download=1" class="{% button_classes 'secondary' %}">
@@ -11,7 +11,7 @@
                 </a>
             </div>
             <iframe src="{% url 'routine-archive-file' selected.filename %}"
-                    class="w-full h-[75vh] min-h-[420px] border border-gray-200 dark:border-slate-700 rounded-md bg-white"
+                    class="w-full h-[75vh] min-h-[420px] border border-line rounded-md bg-surface"
                     title="Routine document {{ selected.label }}"></iframe>
         {% else %}
             {% include "components/empty_state.html" with message="No routine has been uploaded yet." %}
@@ -21,8 +21,8 @@
 
 {% if archive|length > 1 %}
 <section>
-    <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Previous Routines</h2>
-    <ul class="{% card_classes %} divide-y divide-gray-100 dark:divide-slate-700 flex flex-wrap gap-2 divide-y-0">
+    <h2 class="text-sm font-semibold text-ink-muted uppercase tracking-wide mb-2">Previous Routines</h2>
+    <ul class="{% card_classes %} divide-y divide-line flex flex-wrap gap-2 divide-y-0">
         {% for entry in archive %}
             {% if entry != selected %}
                 <li>
@@ -31,7 +31,7 @@
                        hx-target="#routine-archive-viewer"
                        hx-swap="innerHTML"
                        hx-push-url="true"
-                       class="inline-block px-3 py-1.5 rounded-md text-sm text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-slate-800 hover:bg-blue-100 dark:hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+                       class="inline-block px-3 py-1.5 rounded-md text-sm text-accent bg-info-wash hover:bg-info-wash focus:outline-none focus-visible:ring-2 focus-visible:ring-accent">
                         {{ entry.label }}
                     </a>
                 </li>

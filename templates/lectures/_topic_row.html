@@ -1,34 +1,34 @@
-<tr class="border-b last:border-0 hover:bg-gray-50" id="topic-row-{{ topic.id }}">
-    <td class="p-2 text-gray-500">{{ topic.display_order }}</td>
+<tr class="border-b last:border-0 hover:bg-surface-quiet" id="topic-row-{{ topic.id }}">
+    <td class="p-2 text-ink-muted">{{ topic.display_order }}</td>
     <td class="p-2">{{ topic.topic }}</td>
-    <td class="p-2 text-gray-500">
+    <td class="p-2 text-ink-muted">
         {% if topic.chapter %}{{ topic.chapter.get_paper_display }} &middot; Ch. {{ topic.chapter.chapter_no }}{% else %}&mdash;{% endif %}
     </td>
     <td class="p-2 text-center">
         <input type="checkbox" {% if topic.progress_obj.class_done %}checked{% endif %}
                aria-label="Class done for {{ topic.topic }}"
-               class="focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+               class="focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                hx-post="{% url 'progress-toggle' topic.id 'class_done' %}"
                hx-target="closest tr" hx-swap="outerHTML" hx-trigger="change">
     </td>
     <td class="p-2 text-center">
         <input type="checkbox" {% if topic.progress_obj.notes_done %}checked{% endif %}
                aria-label="Notes done for {{ topic.topic }}"
-               class="focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+               class="focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                hx-post="{% url 'progress-toggle' topic.id 'notes_done' %}"
                hx-target="closest tr" hx-swap="outerHTML" hx-trigger="change">
     </td>
     <td class="p-2 text-center">
         <input type="checkbox" {% if topic.progress_obj.revision_done %}checked{% endif %}
                aria-label="Revision done for {{ topic.topic }}"
-               class="focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+               class="focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                hx-post="{% url 'progress-toggle' topic.id 'revision_done' %}"
                hx-target="closest tr" hx-swap="outerHTML" hx-trigger="change">
     </td>
     <td class="p-2 text-center">
         <input type="checkbox" {% if topic.progress_obj.practice_done %}checked{% endif %}
                aria-label="Practice done for {{ topic.topic }}"
-               class="focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+               class="focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                hx-post="{% url 'progress-toggle' topic.id 'practice_done' %}"
                hx-target="closest tr" hx-swap="outerHTML" hx-trigger="change">
     </td>

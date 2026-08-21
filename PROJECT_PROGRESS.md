@@ -5883,19 +5883,16 @@ polish change touch templates/`ui_tags.py` only - no query impact.
   `/reminders/preferences/` while logged in. Acceptable for a
   single/few-user personal tool; would need a signed-token link for a
   multi-tenant product.
-- **Dark mode coverage follows the Shared Component Rule, not a full
-  page-by-page sweep** (Milestone 15.1, Phase 10) - every shared
-  component (`templates/components/*.html`) and all five `ui_tags.py`
-  class-string functions gained `dark:` variants, which covers most of
-  the app since Milestone 13 already consolidated most card/badge/
-  table-row styling onto them. Any page markup that still hand-writes
-  its own literal `bg-white`/`text-gray-900`/etc. instead of going
-  through a shared component or tag (a pre-existing gap in component
-  adoption, not something this milestone introduced) will render
-  light-only in dark mode until that page is migrated onto the shared
-  system - which is the correct fix, per the milestone's own
-  "Avoid page-specific CSS" instruction, rather than hand-patching
-  dark: classes onto bespoke markup here.
+- ~~Dark mode coverage follows the Shared Component Rule, not a full
+  page-by-page sweep~~ (Milestone 15.1, Phase 10). **Resolved by
+  Milestone 20**: the visual-identity rework replaced every literal
+  `gray-*`/`slate-*`/`blue-*`/`bg-white` (including the hand-rolled
+  markup this entry specifically called out, e.g. the Dashboard/
+  Progress pages) with theme-aware tokens (`bg-surface`, `text-ink`,
+  etc.) that are correct in both themes with no `dark:` class at all -
+  not a page-by-page sweep of `dark:` variants, but the underlying gap
+  (page markup bypassing the shared system) closed at the token level
+  instead.
 - **The Reminder Test Center's recipient selector is a plain `<select>`
   of every active user** (Milestone 15.1, Phase 5) - genuinely
   "searchable" via native browser type-ahead for a handful-to-dozens
@@ -6032,6 +6029,128 @@ SSL drop during `migrate` - see the new Known Issues entry above.
 Production was unaffected (previous deploy stayed live throughout);
 no fix needed, just noted for the record.
 
+### Milestone 20 — "Indigo Study" Visual Identity & Dashboard Restructure
+
+**Problem**: two related complaints about the UI, not covered by any
+prior milestone's scope. First, the visual design itself: zero
+customization on top of Tailwind's defaults anywhere in the app - no
+custom palette, no font import, `rounded-lg` everywhere, stock
+`blue-600`/`gray-*` - the exact look of an unstyled tutorial project,
+not a finished product. Second, independent of color: the Dashboard
+had accumulated ~15 cards across six stacked sections (Today's
+Routine, Upcoming Lecture/Exam, Overall Completion, 4 metric tiles,
+Most/Least Completed Subject, 4 Study Advisor tiles, 4 Revision tiles
++ a bar, Recent Activity/Upcoming Exams) - everything the app knows
+about a user, all at once, with no priority. For a tool whose stated
+purpose is making study tracking *easy*, a landing page that takes
+longer to read than to act on defeats its own point.
+
+**Fix, Part 1 - visual identity**: designed and user-approved a
+palette+type direction ("Indigo Study": cool blue-tinted neutrals,
+one deliberate indigo accent, Newsreader for headings, Work Sans for
+body - chosen from three full alternatives previewed as Artifacts
+before any code changed), then implemented it as real design tokens
+rather than a template-by-template reskin:
+
+- `theme/static_src/src/styles.css` - semantic color tokens (`bg`,
+  `surface`, `ink`/`ink-muted`/`ink-faint`, `accent`/`accent-strong`,
+  `success`/`warning`/`danger`/`info` each with a paired `-wash` and,
+  where a colored pill needs readable text in both themes,
+  `-ink` variant, plus a theme-fixed `nav` chrome color) defined once
+  as CSS custom properties in `:root` and swapped as a *whole set*
+  under `.dark` (Tailwind v4's `@theme inline` maps each token to a
+  `--color-*` var, so `bg-surface`/`text-ink`/etc. become normal
+  utility classes that are simply already correct in both themes - no
+  `dark:` sibling class needed anywhere, ever again). Newsreader/Work
+  Sans set via one `--font-sans`/`--font-serif` override plus a
+  three-selector heading rule - not a class added to every `<h1-h3>`.
+- `core/templatetags/ui_tags.py` - `card_classes`, `button_classes`,
+  `field_classes`, `status_badge_classes`, `pct_color` all migrated to
+  the new tokens, which propagates the identity through every shared
+  component (cards, buttons, form fields, badges, progress fills) for
+  free.
+- Every remaining template swept for literal `gray-*`/`slate-*`/
+  `blue-*`/`emerald-*`/`amber-*`/`red-*` utilities and their `dark:`
+  siblings (now redundant - the token already flips): ~450 individual
+  class replacements across 65 templates, plus ~50 hand-rolled
+  `bg-white` cards/tables that had never gone through `card_classes`
+  in the first place (so were invisible to earlier dark-mode work).
+- Four real contrast bugs surfaced and fixed, in two rounds: first,
+  mid-sweep, the "TODAY"/"NEXT EXAM" timeline markers and the floating
+  jump-to-today button, which hardcoded `text-white` on `bg-accent`/
+  `bg-warning` - fine while those were fixed dark colors, but wrong
+  once they become theme tokens (dark mode's `accent` is a *light*
+  indigo; white-on-light is unreadable). Then `/simplify`'s altitude
+  review caught two more of the same bug class that manual sweeping
+  missed: `base.html`'s active-nav-link pill (`bg-accent` nested
+  inside the permanently-dark header, still inheriting `text-white`)
+  and `button_classes`'s `danger` variant (`bg-danger text-white`,
+  same failure once dark mode's `danger` token goes light). All four
+  fixed the same way - a paired `-ink` token per status color
+  (`accent-ink`/`warning-ink`/`danger-ink`, plus `success-ink`/
+  `info-ink` added preemptively even though nothing uses them solid
+  yet, since the review's point was that the pattern needs to be a
+  *rule* - "every solid `bg-<status>` fill pairs with a `<status>-ink`
+  text token" - not a one-off patch applied only where a bug happened
+  to be spotted).
+- `/simplify` also caught: a leftover raw `bg-gray-50 dark:bg-slate-900`
+  in `workspace_toolbar_classes()` (`ui_tags.py`) that the template
+  sweep couldn't reach since it's Python, not a template; five auth
+  submit buttons (register/login/password change/reset) that hand-
+  wrote `button_classes('primary')`'s exact output instead of calling
+  the tag; two Dashboard section headers (`Today's Routine`, `Recent
+  Activity`) left as bare `<h2>`s instead of `section_header.html`,
+  inconsistent with their sibling sections in the same restructure;
+  and two now-dead direct queries in `DashboardView.get_context_data`
+  (`upcoming_lecture`/`upcoming_exam`) that the Dashboard rewrite in
+  Part 2 below stopped rendering - removed, since nothing else read
+  them. (The service-level `most_completed`/`least_completed`/
+  `upcoming_exams_list`/`upcoming_exams` keys the Dashboard also
+  stopped rendering were *not* removed - `get_dashboard_stats`/
+  `get_dashboard_widgets` each have their own dedicated unit tests in
+  `progress/tests.py` exercising them as a tested service API
+  independent of what the Dashboard UI currently shows, so trimming
+  those was judged out of scope for this diff.)
+- As a side effect, this closes the dark-mode-inconsistency Known
+  Issue below (Dashboard/Progress never had `dark:` classes at all) -
+  same tokens everywhere now, nothing left to sweep separately.
+
+**Fix, Part 2 - Dashboard restructure**: `dashboard/index.html` and
+`_widgets.html` rewritten around "what needs attention right now"
+instead of "everything, all at once":
+
+- Removed the redundant Upcoming Lecture/Upcoming Exam card pair
+  (Today's Routine plus the Next Exam metric tile already cover this).
+- Removed Most/Least Completed Subject entirely - Progress's full
+  per-subject table already shows this, completely.
+- Condensed the 4-tile Study Advisor grid into one card, one row per
+  insight, since Analytics Insights (linked via a "View full
+  insights" action, `components/section_header.html`) already covers
+  Study Streak/Priority Chapter/Neglected Chapters/subject ranking in
+  more depth - the dashboard's job is a teaser + link, not a second
+  copy of the same numbers.
+- Condensed the 4-tile Revision grid (Due Today/Overdue/Upcoming/
+  Completed This Week) into a progress bar plus a row of count badges,
+  linking out to Revision Queue for the actual list.
+- Dropped the Upcoming Exams list at the bottom (redundant with the
+  Next Exam metric tile and Exam Timeline); kept Recent Activity,
+  since nothing else on the site shows it.
+- Result: ~15 cards across six sections down to roughly eight
+  elements across five, with every number's canonical detail view one
+  click away instead of duplicated inline. No context variable, view,
+  or query changed - `dashboard/views.py` and every `progress.services`
+  function are untouched, so the existing query-count-budget tests
+  (Milestone 8/9's fixed-query-count guards) still hold unmodified.
+
+**Verification**: `core/tests_ui.py` updated to assert the new class
+vocabulary (`bg-surface`/`text-ink`/etc. instead of the old literals)
+and rebuilt-CSS required-utility list; all 536 tests pass, including
+every dashboard/revision/analytics-widget test that asserts on exact
+rendered text (`"Study Advisor"`, `"Ready For Exam"`, `"Revision"`,
+`"No upcoming exam"` - each preserved verbatim in the new layout so
+those assertions needed no changes). Compiled Tailwind CSS rebuilt via
+`npm run build` and spot-checked for the new tokens.
+
 ## Next Milestone
 
 The application is live in production (Render, now on Neon Postgres
@@ -6042,11 +6161,11 @@ its own priority order, cross-checked against this document, is:
 1. **GitHub Actions scheduler (`plan_v1.md` Phase A) - shipped and
    verified (Milestone 19).** Live on `main`, secrets set, manual dry
    run passed against production. Fully done.
-2. **UI refinement (`plan_v1.md` Phase G)** - table-polish (numeric
-   alignment, Milestone 13's Known Issues), a full page-by-page dark-
-   mode sweep beyond shared-component coverage, resolving
-   `auth_card.html`'s dead-code status (Milestone 15.2's Known
-   Issues).
+2. **UI refinement (`plan_v1.md` Phase G)** - visual identity and the
+   Dashboard's information density are done (Milestone 20). Still
+   open: table-polish (numeric alignment, Milestone 13's Known
+   Issues), resolving `auth_card.html`'s dead-code status (Milestone
+   15.2's Known Issues).
 3. **Production security audit, full reminder acceptance test, backup/
    recovery documentation, final smoke test, monitoring** (`plan_v1.md`
    Phases J-O) - none started yet; the scheduler they depend on

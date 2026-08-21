@@ -1,7 +1,7 @@
 {% load ui_tags %}
 <section class="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
     {% include "components/metric_card.html" with label="Due Today" value=revision_due_today %}
-    {% class_if_positive revision_overdue "text-red-600" as overdue_class %}
+    {% class_if_positive revision_overdue "text-danger" as overdue_class %}
     {% include "components/metric_card.html" with label="Overdue" value=revision_overdue value_class=overdue_class %}
     {% include "components/metric_card.html" with label="Upcoming" value=revision_upcoming %}
     {% include "components/metric_card.html" with label="Completed This Week" value=revision_completed_this_week %}
@@ -9,7 +9,7 @@
 <section class="mb-6">
     <div class="{% card_classes %}">
         {% include "components/progress_bar.html" with percentage=revision_completion_percentage size="md" %}
-        <p class="text-sm text-gray-600 mt-2">
+        <p class="text-sm text-ink-muted mt-2">
             {{ revision_completion_percentage }}% of all revisions completed &middot;
             {{ exam_ready_count }} lecture{{ exam_ready_count|pluralize }} exam-ready
         </p>

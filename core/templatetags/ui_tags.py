@@ -16,18 +16,14 @@ from django import template
 register = template.Library()
 
 BUTTON_VARIANTS = {
-    "primary": "bg-slate-900 text-white hover:bg-slate-800 focus-visible:ring-slate-900 "
-               "dark:bg-slate-700 dark:hover:bg-slate-600",
-    "secondary": "border border-gray-300 text-gray-700 hover:bg-gray-100 focus-visible:ring-blue-500 "
-                 "dark:border-slate-600 dark:text-gray-200 dark:hover:bg-slate-800",
-    "danger": "bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-600 "
-              "dark:bg-red-700 dark:hover:bg-red-600",
+    "primary": "bg-accent text-accent-ink hover:bg-accent-strong focus-visible:ring-accent",
+    "secondary": "border border-line text-ink hover:bg-surface-quiet focus-visible:ring-accent",
+    "danger": "bg-danger text-danger-ink hover:opacity-90 focus-visible:ring-danger",
 }
 
 FIELD_CLASSES = (
-    "border border-gray-300 rounded px-2 py-1.5 text-sm w-full "
-    "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 "
-    "dark:border-slate-600 dark:bg-slate-800 dark:text-gray-100"
+    "border border-line bg-surface text-ink rounded px-2 py-1.5 text-sm w-full "
+    "focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent"
 )
 
 
@@ -64,10 +60,10 @@ def pct_color(percentage):
     except (TypeError, ValueError):
         pct = 0
     if pct >= 100:
-        return "bg-emerald-500"
+        return "bg-success"
     if pct >= 40:
-        return "bg-blue-500"
-    return "bg-amber-400"
+        return "bg-accent"
+    return "bg-warning"
 
 
 @register.simple_tag
@@ -81,11 +77,11 @@ def times(count):
 
 
 STATUS_BADGE_VARIANTS = {
-    "positive": "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300",
-    "warning": "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300",
-    "danger": "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
-    "info": "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
-    "neutral": "bg-gray-100 text-gray-600 dark:bg-slate-800 dark:text-gray-300",
+    "positive": "bg-success-wash text-success",
+    "warning": "bg-warning-wash text-warning",
+    "danger": "bg-danger-wash text-danger",
+    "info": "bg-info-wash text-info",
+    "neutral": "bg-surface-quiet text-ink-muted",
 }
 
 
@@ -108,37 +104,29 @@ def status_badge_classes(variant):
 
 
 CARD_VARIANTS = {
-    # Milestone 15.2, Part 9: the default surface every card in the
-    # app already used before this milestone - kept as the literal,
-    # contiguous "bg-white border border-gray-200" prefix so
-    # `card_classes()`'s existing output (and every test asserting
-    # against it, e.g. core/tests_ui.py's card_classes tests) is
-    # unchanged for the default/"primary" case.
-    "primary": "bg-white border border-gray-200",
+    # Milestone 20 - "Indigo Study" visual identity. `surface`/`line`
+    # are theme-aware tokens (styles.css), so this single class list
+    # is correct in light and dark with no `dark:` sibling needed.
+    "primary": "bg-surface border border-line",
     # A visually quieter surface for content nested *inside* a primary
     # card (e.g. a sub-section that shouldn't compete with the card
     # around it) - same border weight, softer fill.
-    "secondary": "bg-gray-50 border border-gray-200",
+    "secondary": "bg-surface-quiet border border-line",
     # Semantically distinct from "primary" for stat-tile call sites
     # (metric_card.html), even though it shares primary's surface -
     # naming the variant, not restyling it, is what Part 9 asks for.
-    "metric": "bg-white border border-gray-200",
-}
-
-CARD_VARIANT_DARK = {
-    "primary": "dark:bg-slate-800 dark:border-slate-700",
-    "secondary": "dark:bg-slate-900 dark:border-slate-700",
-    "metric": "dark:bg-slate-800 dark:border-slate-700",
+    "metric": "bg-surface border border-line",
 }
 
 
 @register.simple_tag
 def card_classes(density="normal", variant="primary"):
     """Canonical card wrapper classes (Milestone 13, Phase 3 - "Card
-    System Refinement"; Milestone 15.2, Part 9 added `variant`). One
-    definition for every bordered card in the app, so a future
-    spacing/radius/border/surface tweak changes every card at once
-    instead of needing a page-by-page sweep.
+    System Refinement"; Milestone 15.2, Part 9 added `variant`; Milestone
+    20 moved the surface colors onto theme-aware tokens). One definition
+    for every bordered card in the app, so a future spacing/radius/
+    border/surface tweak changes every card at once instead of needing
+    a page-by-page sweep.
 
     `density` controls padding only: "normal" (p-4, the default - stat
     tiles, content sections, canonical-page boxes) or "dense" (p-3 -
@@ -147,14 +135,13 @@ def card_classes(density="normal", variant="primary"):
     cards). This is a deliberate two-tier system, not an inconsistency
     left unresolved - see PROJECT_PROGRESS.md, Milestone 13.
 
-    `variant` controls surface: "primary" (default - the original
-    white/slate-800 card), "secondary" (a quieter nested surface),
-    "metric" (identical surface to primary, named separately so a
-    stat-tile call site self-documents what kind of card it is)."""
+    `variant` controls surface: "primary" (default card), "secondary"
+    (a quieter nested surface), "metric" (identical surface to
+    primary, named separately so a stat-tile call site self-documents
+    what kind of card it is)."""
     padding = "p-3" if density == "dense" else "p-4"
     base = CARD_VARIANTS.get(variant, CARD_VARIANTS["primary"])
-    dark = CARD_VARIANT_DARK.get(variant, CARD_VARIANT_DARK["primary"])
-    return f"{base} rounded-lg {padding} {dark}"
+    return f"{base} rounded-lg {padding}"
 
 
 @register.simple_tag
@@ -166,4 +153,4 @@ def workspace_toolbar_classes():
     a `text-lg` logo). One definition shared by all three pages rather
     than three copies of the same class string, per Phase 11's "no
     duplicated layouts" instruction."""
-    return "sticky top-14 z-20 bg-gray-50 dark:bg-slate-900 pt-4 pb-3 -mx-4 px-4 sm:mx-0 sm:px-0"
+    return "sticky top-14 z-20 bg-bg pt-4 pb-3 -mx-4 px-4 sm:mx-0 sm:px-0"

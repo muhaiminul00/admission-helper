@@ -4,10 +4,10 @@
    total (optional - renders "value / total", for "12 / 20" style
    counts), unit (optional - a short suffix appended directly after
    the value, e.g. "d" for days), value_class (optional extra classes
-   for the value, e.g. "text-red-600" when a count like "overdue"
+   for the value, e.g. "text-danger" when a count like "overdue"
    should stand out), sublabel (optional). {% endcomment %}
 <div class="{% card_classes variant='metric' %}">
-    <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ label }}</p>
-    <p class="mt-1 text-2xl font-semibold text-gray-900 dark:text-gray-100 {{ value_class }}">{{ value }}{% if unit %}{{ unit }}{% endif %}{% if total is not None %}<span class="text-gray-400 dark:text-gray-500 text-base font-normal"> / {{ total }}</span>{% endif %}</p>
-    {% if sublabel %}<p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{{ sublabel }}</p>{% endif %}
+    <p class="text-xs font-medium text-ink-muted uppercase tracking-wide">{{ label }}</p>
+    <p class="mt-1 text-2xl font-semibold text-ink {{ value_class }}">{{ value }}{% if unit %}{{ unit }}{% endif %}{% if total is not None %}<span class="text-ink-faint text-base font-normal"> / {{ total }}</span>{% endif %}</p>
+    {% if sublabel %}<p class="mt-0.5 text-xs text-ink-muted">{{ sublabel }}</p>{% endif %}
 </div>

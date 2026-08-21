@@ -4,12 +4,12 @@
 
 {% block content %}
 <div class="max-w-md mx-auto text-center py-16">
-    <p class="text-5xl font-semibold text-gray-300 mb-4">404</p>
+    <p class="text-5xl font-semibold text-ink-faint mb-4">404</p>
     <h1 class="text-xl font-semibold mb-2">Page not found</h1>
-    <p class="text-gray-500 mb-6">
+    <p class="text-ink-muted mb-6">
         The lecture, exam, or page you're looking for doesn't exist, or the
         link may be out of date.
     </p>
-    <a href="{% url 'dashboard' %}" class="text-blue-600 hover:underline">&larr; Back to Dashboard</a>
+    <a href="{% url 'dashboard' %}" class="text-accent hover:underline">&larr; Back to Dashboard</a>
 </div>
 {% endblock %}

@@ -4,8 +4,8 @@
    content_template (required - see components/card.html for why this
    is a template-name indirection, not literal child markup). {% endcomment %}
 <div class="max-w-sm mx-auto">
-    <h1 class="text-2xl font-semibold mb-6 text-gray-900 dark:text-gray-100">{{ title }}</h1>
-    <div class="bg-white border border-gray-200 rounded-lg p-6 dark:bg-slate-800 dark:border-slate-700">
+    <h1 class="text-2xl font-semibold mb-6 text-ink">{{ title }}</h1>
+    <div class="bg-surface border border-line rounded-lg p-6">
         {% include content_template %}
     </div>
 </div>

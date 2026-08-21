@@ -8,30 +8,30 @@
    `flex-wrap`, not `overflow-x-auto` - consistent with this project's
    own "no horizontal scrolling" rule (Milestone 15.1, Phase 2). {% endcomment %}
 <nav aria-label="Analytics sections" class="mb-6">
-    <div class="inline-flex flex-wrap gap-1 p-1 rounded-lg bg-gray-100 dark:bg-slate-800 text-sm">
+    <div class="inline-flex flex-wrap gap-1 p-1 rounded-lg bg-surface-quiet text-sm">
         <a href="{{ i_url }}"
            {% if request.path == i_url %}aria-current="page"{% endif %}
-           class="px-3 py-1.5 rounded-md whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {% if request.path == i_url %}bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 font-medium shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200{% endif %}">
+           class="px-3 py-1.5 rounded-md whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-accent {% if request.path == i_url %}bg-surface text-ink font-medium shadow-sm{% else %}text-ink-muted hover:text-ink{% endif %}">
             Insights
         </a>
         <a href="{{ s_url }}"
            {% if request.path == s_url %}aria-current="page"{% endif %}
-           class="px-3 py-1.5 rounded-md whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {% if request.path == s_url %}bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 font-medium shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200{% endif %}">
+           class="px-3 py-1.5 rounded-md whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-accent {% if request.path == s_url %}bg-surface text-ink font-medium shadow-sm{% else %}text-ink-muted hover:text-ink{% endif %}">
             Subjects
         </a>
         <a href="{{ c_url }}"
            {% if request.path == c_url %}aria-current="page"{% endif %}
-           class="px-3 py-1.5 rounded-md whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {% if request.path == c_url %}bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 font-medium shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200{% endif %}">
+           class="px-3 py-1.5 rounded-md whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-accent {% if request.path == c_url %}bg-surface text-ink font-medium shadow-sm{% else %}text-ink-muted hover:text-ink{% endif %}">
             Chapters
         </a>
         <a href="{{ l_url }}"
            {% if request.path == l_url %}aria-current="page"{% endif %}
-           class="px-3 py-1.5 rounded-md whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {% if request.path == l_url %}bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 font-medium shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200{% endif %}">
+           class="px-3 py-1.5 rounded-md whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-accent {% if request.path == l_url %}bg-surface text-ink font-medium shadow-sm{% else %}text-ink-muted hover:text-ink{% endif %}">
             Lectures
         </a>
         <a href="{{ e_url }}"
            {% if request.path == e_url %}aria-current="page"{% endif %}
-           class="px-3 py-1.5 rounded-md whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {% if request.path == e_url %}bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 font-medium shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200{% endif %}">
+           class="px-3 py-1.5 rounded-md whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-accent {% if request.path == e_url %}bg-surface text-ink font-medium shadow-sm{% else %}text-ink-muted hover:text-ink{% endif %}">
             Exam Readiness
         </a>
     </div>

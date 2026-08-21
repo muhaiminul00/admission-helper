@@ -4,13 +4,13 @@
         <div class="{% card_classes %}">
             <div class="flex justify-between items-start mb-2">
                 <h3 class="font-medium">
-                    <a href="{% url 'subject-detail' row.subject.pk %}" class="text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">{{ row.subject.name }}</a>
+                    <a href="{% url 'subject-detail' row.subject.pk %}" class="text-accent hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">{{ row.subject.name }}</a>
                 </h3>
-                <span class="text-xs text-gray-500 bg-gray-100 rounded px-1.5 py-0.5">{{ row.subject.code }}</span>
+                <span class="text-xs text-ink-muted bg-surface-quiet rounded px-1.5 py-0.5">{{ row.subject.code }}</span>
             </div>
             {% include "components/progress_meter.html" with progress=row.progress size="sm" %}
-            <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">{{ row.completed }} / {{ row.total }} topics &middot; {{ row.percentage }}%</p>
-            <p class="text-xs text-gray-500 dark:text-gray-400">{{ row.remaining }} remaining</p>
+            <p class="text-sm text-ink-muted mt-2">{{ row.completed }} / {{ row.total }} topics &middot; {{ row.percentage }}%</p>
+            <p class="text-xs text-ink-muted">{{ row.remaining }} remaining</p>
         </div>
     {% empty %}
         <div class="col-span-full">

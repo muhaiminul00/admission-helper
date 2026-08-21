@@ -1,11 +1,12 @@
 {% extends "base.html" %}
+{% load ui_tags %}
 
 {% block title %}Register - Admission Helper{% endblock %}
 
 {% block content %}
 <div class="max-w-sm mx-auto mt-4">
-    <h1 class="text-2xl font-semibold mb-6 text-gray-900 dark:text-gray-100">Create an Account</h1>
-    <div class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6">
+    <h1 class="text-2xl font-semibold mb-6 text-ink">Create an Account</h1>
+    <div class="bg-surface border border-line rounded-lg p-6">
         <form method="post">
             {% csrf_token %}
             <div class="space-y-4">
@@ -13,12 +14,12 @@
                     {% include "components/form_field.html" %}
                 {% endfor %}
             </div>
-            <button type="submit" class="mt-6 w-full bg-slate-900 text-white rounded py-2 hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-1">
+            <button type="submit" class="{% button_classes 'primary' 'lg' %} mt-6 w-full">
                 Register
             </button>
         </form>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mt-4">
-            Already have an account? <a href="{% url 'login' %}" class="text-blue-600 dark:text-blue-400 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">Login</a>
+        <p class="text-sm text-ink-muted mt-4">
+            Already have an account? <a href="{% url 'login' %}" class="text-accent hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">Login</a>
         </p>
     </div>
 </div>

@@ -60,11 +60,11 @@ class ComponentRenderingTests(TestCase):
     def test_badge_renders_text_and_secondary(self):
         html = render_to_string(
             "components/badge.html",
-            {"text": "Ready", "secondary": "92", "classes": "bg-emerald-100 text-emerald-800"},
+            {"text": "Ready", "secondary": "92", "classes": "bg-success-wash text-success"},
         )
         self.assertIn("Ready", html)
         self.assertIn("92", html)
-        self.assertIn("bg-emerald-100", html)
+        self.assertIn("bg-success-wash", html)
 
     def test_progress_bar_renders_percentage_and_label(self):
         html = render_to_string(
@@ -103,7 +103,7 @@ class ComponentRenderingTests(TestCase):
 
     def test_loading_skeleton_renders_configured_row_count(self):
         html = render_to_string("components/loading_skeleton.html", {"rows": 4})
-        self.assertEqual(html.count("bg-gray-100 border"), 4)
+        self.assertEqual(html.count("bg-surface-quiet border"), 4)
         self.assertIn("htmx-indicator", html)
 
 
@@ -149,7 +149,7 @@ class ProgressMeterTests(TestCase):
         # 3 colored blocks (2 blue + 1 green), 5 empty.
         self.assertEqual(html.count("bg-blue-500"), 2)
         self.assertEqual(html.count("bg-emerald-500"), 1)
-        self.assertEqual(html.count("bg-gray-200 dark:bg-slate-700"), 5)
+        self.assertEqual(html.count("bg-surface-quiet"), 5)
 
     def test_medium_entity_uses_narrower_blocks(self):
         # 5 topics = 20 units (17-32) - Part 5's "medium" tier.
@@ -418,10 +418,10 @@ class CompiledCSSTests(TestCase):
     """
 
     REQUIRED_UTILITIES = [
-        ".bg-white{", ".bg-slate-900{", ".border{", ".border-gray-200{",
-        ".rounded-lg{", ".p-4{", ".px-4{", ".py-2{", ".text-gray-900{",
-        ".text-gray-500{", ".text-blue-600{", ".grid{", ".gap-4{",
-        "hover\\:bg-slate-800", "focus-visible\\:ring-2",
+        ".bg-surface{", ".bg-nav{", ".border{", ".border-line{",
+        ".rounded-lg{", ".p-4{", ".px-4{", ".py-2{", ".text-ink{",
+        ".text-ink-muted{", ".text-accent{", ".grid{", ".gap-4{",
+        "hover\\:bg-white\\/10", "focus-visible\\:ring-2",
         # Milestone 12's sticky workspace layout (Phase 1) - added here
         # specifically because this exact class of bug (new classes
         # used in templates, stale compiled CSS) recurred once already
@@ -430,15 +430,15 @@ class CompiledCSSTests(TestCase):
         # Milestone 13's past-day dimming (Phase 5).
         ".opacity-75{",
         # Milestone 13's table/list-row hover state (Phase 9).
-        "hover\\:bg-gray-50",
-        # Milestone 15.1's nav-wrap fix (Phase 2) and global dark mode
-        # (Phase 9/10) - `dark:` utilities only activate via the
-        # `.dark` class (theme/static_src/src/styles.css's
-        # `@custom-variant dark`), so a stale build would silently
-        # leave every page unstyled in dark mode specifically, with
-        # every *other* CSS test still passing (light mode unaffected).
-        ".flex-wrap{", "dark\\:bg-slate-800", "dark\\:bg-slate-900",
-        "dark\\:text-gray-100", "dark\\:border-slate-700",
+        "hover\\:bg-surface-quiet",
+        # Milestone 15.1's nav-wrap fix (Phase 2).
+        ".flex-wrap{",
+        # Milestone 20 - "Indigo Study" visual identity (theme tokens
+        # defined in styles.css, swapped as a whole under `.dark` - see
+        # that file's own comment - so unlike the old `gray-*`/`slate-*`
+        # sweep, no separate `dark:` utility needs asserting here; a
+        # stale build would already fail on `.bg-surface{` etc. above).
+        ".bg-accent{", ".text-success{", "bg-danger-wash",
         # Milestone 15.2 - the Progress Component's fixed dimension
         # colors (Part 2's permanent Class/Notes/Revision/Practice
         # palette), the analytics segmented tabs' active-chip shadow,
@@ -543,8 +543,8 @@ class CardAndBadgeConsistencyTests(TestCase):
         normal, dense = template.render(Context({})).split("|")
         self.assertIn("p-4", normal)
         self.assertIn("p-3", dense)
-        self.assertIn("bg-white border border-gray-200 rounded-lg", normal)
-        self.assertIn("bg-white border border-gray-200 rounded-lg", dense)
+        self.assertIn("bg-surface border border-line rounded-lg", normal)
+        self.assertIn("bg-surface border border-line rounded-lg", dense)
 
     def test_card_classes_variants(self):
         # Milestone 15.2, Part 9 - three reusable card variants.
@@ -557,10 +557,9 @@ class CardAndBadgeConsistencyTests(TestCase):
             "{% card_classes variant='metric' %}"
         )
         primary, secondary, metric = template.render(Context({})).split("|")
-        self.assertIn("bg-white", primary)
-        self.assertIn("bg-gray-50", secondary)
-        self.assertIn("bg-white", metric)
-        self.assertIn("dark:bg-slate-900", secondary)
+        self.assertIn("bg-surface", primary)
+        self.assertIn("bg-surface-quiet", secondary)
+        self.assertIn("bg-surface", metric)
 
     def test_status_badge_classes_tag_covers_every_variant(self):
         from django.template import Context, Template
@@ -574,17 +573,17 @@ class CardAndBadgeConsistencyTests(TestCase):
             "{% status_badge_classes 'neutral' %}"
         )
         positive, warning, danger, info, neutral = template.render(Context({})).split("|")
-        self.assertIn("emerald", positive)
-        self.assertIn("amber", warning)
-        self.assertIn("red", danger)
-        self.assertIn("blue", info)
-        self.assertIn("gray", neutral)
+        self.assertIn("success", positive)
+        self.assertIn("warning", warning)
+        self.assertIn("danger", danger)
+        self.assertIn("info", info)
+        self.assertIn("surface-quiet", neutral)
 
     def test_unknown_variant_falls_back_to_neutral(self):
         from django.template import Context, Template
 
         template = Template("{% load ui_tags %}{% status_badge_classes 'not-a-real-variant' %}")
-        self.assertIn("gray", template.render(Context({})))
+        self.assertIn("surface-quiet", template.render(Context({})))
 
 
 class RevisionUpcomingBadgeRegressionTests(TestCase):
@@ -624,4 +623,4 @@ class RevisionUpcomingBadgeRegressionTests(TestCase):
         self.assertContains(response, expected_fragment)
         # The old bug rendered a completely empty badge - guard against
         # that exact regression explicitly.
-        self.assertNotIn('font-medium bg-blue-100 text-blue-800"></span>', response.content.decode())
+        self.assertNotIn('font-medium bg-info-wash text-info"></span>', response.content.decode())
