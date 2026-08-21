@@ -5965,6 +5965,47 @@ polish change touch templates/`ui_tags.py` only - no query impact.
 
 ---
 
+### Milestone 19 — GitHub Actions Reminder Scheduler (Phase A)
+
+**Problem**: Milestone 17.1 removed Render's cron support entirely
+(Free plan rejects `type: cron` services outright), leaving the five
+`send_*` reminder commands (`reminders/management/commands/`) with
+**zero scheduler** invoking them in production - not a suboptimal
+schedule, an actual gap, since the Neon migration (Milestone 18).
+
+**Fix**: added `.github/workflows/reminders.yml` - a GitHub Actions
+workflow that runs on GitHub's own infrastructure and connects
+straight to the production Neon database via `DATABASE_URL`. No
+reminder logic or app code changed; the workflow calls the existing
+management commands unchanged, exactly as Render's removed Scheduled
+Jobs would have:
+
+- Two `schedule` triggers, unchanged from the original Milestone 17
+  cron derivation: hourly (`send_daily_agenda`, since
+  `NotificationPreference.daily_agenda_time` is per-user/configurable)
+  and daily at 03:00 UTC = 09:00 Asia/Dhaka (the other four, safely
+  past `EXAM_DAY_MORNING_TIME`). A single step reads
+  `github.event.schedule` to pick which command(s) that firing runs.
+- `workflow_dispatch` with `command` (choice, default `all`) and
+  `dry_run` (boolean, default `true`) inputs for safe manual testing
+  from the Actions tab.
+- Passed through `/simplify` before commit: merged two near-duplicate
+  command loops into a single plan/run step split, added pip
+  dependency caching (this runs hourly), and cross-referenced
+  `render.yaml`'s `TIME_ZONE`/cron-derivation comment instead of
+  re-deriving it undocumented in a second file.
+
+**Requires** four GitHub Actions secrets configured before it can
+actually send anything (`DATABASE_URL`, `SECRET_KEY`,
+`EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`) - see `docs/Deployment.md`
+Section 6 for the full list and manual-test instructions. Shipped via
+branch -> PR #5 -> CI (`test pass 2m58s`) -> `develop` -> `main`; no
+app code changed, so all 533 tests remain unaffected.
+
+**Verification still pending** (not yet done as of this write-up):
+confirming the secrets are actually set in the GitHub repo, and a
+real `workflow_dispatch` dry run against production.
+
 ## Next Milestone
 
 The application is live in production (Render, now on Neon Postgres
@@ -5972,14 +6013,11 @@ per Milestone 18) with real users and real data - deployment itself is
 done, not pending. `plan_v1.md` is the master V1 roadmap from here;
 its own priority order, cross-checked against this document, is:
 
-1. **GitHub Actions scheduler (`plan_v1.md` Phase A)** - the highest-
-   priority remaining item, now more urgent than the plan originally
-   framed it: Milestone 17.1 removed Render's cron entirely (Free plan
-   doesn't support it), so the five `send_*` reminder commands
-   currently have **no scheduler at all** in production, not merely a
-   suboptimal one. GitHub Actions workflows (`workflow_dispatch` for
-   manual runs, `--dry-run` first, then real schedules) should invoke
-   the existing commands unchanged - no reminder-engine rewrite.
+1. **GitHub Actions scheduler (`plan_v1.md` Phase A) - shipped
+   (Milestone 19), verification pending.** The workflow exists and is
+   live on `main`; what remains is setting the four required secrets
+   in the GitHub repo and running a `workflow_dispatch` dry run
+   against production before trusting the real schedules.
 2. **UI refinement (`plan_v1.md` Phase G)** - table-polish (numeric
    alignment, Milestone 13's Known Issues), a full page-by-page dark-
    mode sweep beyond shared-component coverage, resolving
@@ -5987,8 +6025,8 @@ its own priority order, cross-checked against this document, is:
    Issues).
 3. **Production security audit, full reminder acceptance test, backup/
    recovery documentation, final smoke test, monitoring** (`plan_v1.md`
-   Phases J-O) - none started yet; blocked in part on Phase A existing
-   first (K/L specifically need a real scheduler to test against).
+   Phases J-O) - none started yet; K/L specifically need the scheduler
+   above verified first.
 4. Smaller/ongoing: per-user timezone-aware reminder triggers
    (Milestone 15/15.1's Known Issue, still open), GitHub branch
    protection on `main` once the repo goes public or the account
