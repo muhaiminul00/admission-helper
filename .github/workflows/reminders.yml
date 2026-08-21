@@ -1,0 +1,110 @@
+# Milestone 19 (Phase A): GitHub Actions reminder scheduler.
+#
+# Render Free supports no Scheduled Jobs (Milestone 17.1), so the five
+# `send_*` management commands (reminders/management/commands/) have
+# had no scheduler invoking them in production since the Render->Neon
+# migration. This workflow replaces that gap entirely externally -
+# it runs on GitHub's infrastructure, connects straight to the
+# production Neon database via DATABASE_URL, and calls the same
+# commands unchanged. No Django app code or reminder logic changes.
+#
+# Schedule is unchanged from the original Milestone 17 design (see
+# docs/Deployment.md, "Reminder Scheduler" section, for the full
+# derivation, and render.yaml's removed cron-job comment for the
+# original reasoning):
+#   - send_daily_agenda: hourly, because NotificationPreference.
+#     daily_agenda_time is per-user/configurable.
+#   - send_weekly_overview / send_exam_reminders /
+#     send_revision_reminders / send_weekly_progress: once daily at
+#     03:00 UTC (= 09:00 Asia/Dhaka), safely past
+#     EXAM_DAY_MORNING_TIME (08:00 Dhaka).
+#
+# Every command is idempotent (ReminderLog's unique constraint), so a
+# missed/late/duplicate-triggered run never double-sends.
+name: Reminder Scheduler
+
+on:
+  schedule:
+    - cron: "0 * * * *" # hourly -> send_daily_agenda
+    - cron: "0 3 * * *" # daily 03:00 UTC -> the other four
+  workflow_dispatch:
+    inputs:
+      command:
+        description: "Which reminder command to run"
+        required: true
+        type: choice
+        default: all
+        options:
+          - all
+          - send_daily_agenda
+          - send_weekly_overview
+          - send_exam_reminders
+          - send_revision_reminders
+          - send_weekly_progress
+      dry_run:
+        description: "Pass --dry-run (show what would be sent, send nothing)"
+        required: true
+        type: boolean
+        default: true
+
+jobs:
+  send-reminders:
+    runs-on: ubuntu-latest
+    # DEBUG/TIME_ZONE are hardcoded (not sensitive, so not secrets) and
+    # must match render.yaml's admission-helper-shared envVarGroup -
+    # if TIME_ZONE ever changes there, update it here too and
+    # recompute every cron expression above (see render.yaml's comment
+    # for why).
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      EMAIL_HOST_USER: ${{ secrets.EMAIL_HOST_USER }}
+      EMAIL_HOST_PASSWORD: ${{ secrets.EMAIL_HOST_PASSWORD }}
+      DEBUG: "False"
+      TIME_ZONE: Asia/Dhaka
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Determine which commands to run
+        id: plan
+        run: |
+          set -e
+          FLAG=""
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            if [ "${{ inputs.dry_run }}" = "true" ]; then
+              FLAG="--dry-run"
+            fi
+            if [ "${{ inputs.command }}" = "all" ]; then
+              COMMANDS="send_daily_agenda send_weekly_overview send_exam_reminders send_revision_reminders send_weekly_progress"
+            else
+              COMMANDS="${{ inputs.command }}"
+            fi
+          # Keep this literal in sync with the matching `cron:` entry
+          # above - it's the only thing that tells the hourly firing
+          # apart from the daily one.
+          elif [ "${{ github.event.schedule }}" = "0 * * * *" ]; then
+            COMMANDS="send_daily_agenda"
+          else
+            COMMANDS="send_weekly_overview send_exam_reminders send_revision_reminders send_weekly_progress"
+          fi
+          echo "commands=$COMMANDS" >> "$GITHUB_OUTPUT"
+          echo "flag=$FLAG" >> "$GITHUB_OUTPUT"
+
+      - name: Run reminder commands
+        run: |
+          set -e
+          for cmd in ${{ steps.plan.outputs.commands }}; do
+            echo "::group::python manage.py $cmd ${{ steps.plan.outputs.flag }}"
+            python manage.py "$cmd" ${{ steps.plan.outputs.flag }}
+            echo "::endgroup::"
+          done
