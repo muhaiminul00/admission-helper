@@ -9,7 +9,10 @@ db.sqlite3-journal
 .idea/
 node_modules/
 staticfiles/
-media/
+media/*
+!media/routines/
+media/routines/*
+!media/routines/*.pdf
 *.log
 theme/static/css/dist/
 .coverage
