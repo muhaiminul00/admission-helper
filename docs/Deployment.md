@@ -217,32 +217,15 @@ specifically for this.
 
 ### 6. Reminder Scheduler
 
-**Status on Render Free (Milestone 17.1): not yet configured.**
-Nothing sends reminders automatically until something runs the five
-`send_*` management commands on a schedule. `render.yaml` no longer
-defines this on Render (see "Render Free plan: no Scheduled Jobs"
-above - the Free plan doesn't support `type: cron` services at all).
-Until a scheduling mechanism is introduced (a paid Render plan's
-Scheduled Jobs, or an external scheduler calling into the app), run
-the five commands manually as needed via Render's Shell:
+**Status (Milestone 19, Phase A): GitHub Actions, live.**
+`.github/workflows/reminders.yml` runs the five `send_*` management
+commands unchanged, on GitHub's infrastructure, against the
+production Neon database - Render Free supports no Scheduled Jobs at
+all (Milestone 17.1), so an external scheduler was the only option
+that needed no paid plan. No reminder logic, no app code changed.
 
-```bash
-python manage.py send_daily_agenda
-python manage.py send_weekly_overview
-python manage.py send_exam_reminders
-python manage.py send_revision_reminders
-python manage.py send_weekly_progress
-```
-
-Every command is idempotent (`ReminderLog`'s unique constraint), so
-running them by hand - even repeatedly, even out of order - never
-double-sends anything; a user who already received a given reminder is
-silently skipped.
-
-The schedule below is the target this project will use once automatic
-scheduling is reintroduced - derived from each command's actual
-trigger logic, not guessed, and unchanged from the original Milestone
-17 design:
+Schedule (unchanged from the original Milestone 17 design - derived
+from each command's actual trigger logic, not guessed):
 
 ```text
 send_daily_agenda        0 * * * *   (hourly)
@@ -251,6 +234,11 @@ send_exam_reminders      0 3 * * *   (daily, 03:00 UTC = 09:00 Asia/Dhaka)
 send_revision_reminders  0 3 * * *   (daily, 03:00 UTC = 09:00 Asia/Dhaka)
 send_weekly_progress     0 3 * * *   (daily, 03:00 UTC = 09:00 Asia/Dhaka)
 ```
+
+The workflow has two `schedule:` triggers (`0 * * * *` and
+`0 3 * * *`); a step reads `github.event.schedule` to pick which
+command(s) that firing should run, so one workflow file covers all
+five without duplicating jobs.
 
 **Daily Agenda runs hourly** because `NotificationPreference.
 daily_agenda_time` is per-user and configurable - only an hourly
@@ -272,9 +260,28 @@ convenience/consistency, not necessity.
 
 Every command is idempotent (`ReminderLog` prevents any duplicate
 send, even across manual re-runs) and accepts `--dry-run` for a no-op
-verification run. Each also now reports per-failure detail (recipient
-+ exact error) to its own stdout, not just a bare count - check a
-Scheduled Job's logs directly if a send count looks wrong.
+verification run. Each also reports per-failure detail (recipient +
+exact error) to its own stdout, not just a bare count - check the
+workflow run's logs directly if a send count looks wrong.
+
+**Required GitHub Actions secrets** (repo Settings -> Secrets and
+variables -> Actions), all read the same way `render.yaml`'s envVars
+are:
+
+```text
+DATABASE_URL        Neon connection string (pooled is fine - one-off, short-lived runs)
+SECRET_KEY           same value as production's SECRET_KEY
+EMAIL_HOST_USER       Gmail address reminders send from
+EMAIL_HOST_PASSWORD   Gmail app password (not the account password)
+```
+
+`DEBUG=False` and `TIME_ZONE=Asia/Dhaka` are hardcoded into the
+workflow's `env:` block, not secrets, since neither is sensitive.
+
+**Manual/test runs**: trigger the workflow from the Actions tab
+("Reminder Scheduler" -> "Run workflow") - pick a single command or
+`all`, and leave `dry_run` checked (the default) to verify without
+sending anything. Uncheck it only once a dry run looks correct.
 
 ### 7. Superuser Creation
 
