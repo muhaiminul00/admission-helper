@@ -5938,21 +5938,36 @@ polish change touch templates/`ui_tags.py` only - no query impact.
   feature. `docs/GitWorkflow.md`'s branching discipline is followed
   manually/by convention instead. Revisit if the repository ever goes
   public or the account upgrades.
-- **No scheduler currently invokes the five `send_*` reminder
-  commands in production at all** (superseded by Milestone 17.1) -
-  Render's Free plan doesn't support `type: cron` Scheduled Jobs, so
-  the schedule this Known Issue originally described (a fixed UTC
-  cron, not per-user local time) was removed from `render.yaml`
-  entirely rather than left running incorrectly. The commands
-  themselves remain fully built, idempotent, and scheduler-agnostic;
-  this is now a "nothing is calling them yet" gap, not a "calling them
-  at the wrong time" one. This is `plan_v1.md` Phase A (GitHub Actions
-  scheduler) - see Next Milestone below. The underlying per-user-
-  timezone gap (`EXAM_DAY_MORNING_TIME` and the Daily Agenda's
-  delivery-time gate reading server/app `TIME_ZONE`, not each user's
-  own `NotificationPreference.timezone`) is unchanged from Milestone
-  15/15.1's original entry and will still apply once a scheduler
+- ~~**No scheduler currently invokes the five `send_*` reminder
+  commands in production at all**~~ **Resolved by Milestone 19**:
+  `.github/workflows/reminders.yml` now invokes them on the original
+  Milestone 17 schedule; the four required secrets are set and a real
+  `workflow_dispatch` dry run against production succeeded (2 daily
+  agenda emails would have sent, 0 for the other four, no errors) -
+  see Milestone 19 below. The underlying per-user-timezone gap
+  (`EXAM_DAY_MORNING_TIME` and the Daily Agenda's delivery-time gate
+  reading server/app `TIME_ZONE`, not each user's own
+  `NotificationPreference.timezone`) is unchanged from Milestone
+  15/15.1's original entry and still applies now that a scheduler
   exists.
+- **Render deploys can fail on a transient Neon cold-start SSL drop**
+  (Milestone 19) - PR #6's deploy (`dep-da436trncjis7394vle0`) failed
+  with `django.db.utils.OperationalError: consuming input failed: SSL
+  connection has been closed unexpectedly` on `migrate`'s very first
+  query. Root cause: the Neon project's compute has
+  `suspend_timeout_seconds: 0` (suspends immediately when idle), so
+  the deploy's first DB connection had to cold-start a suspended
+  compute - a known class of transient Neon/PgBouncer hiccup on the
+  very first post-suspend connection, unrelated to the (docs-only) PR
+  that happened to trigger it. Render kept the previous deploy
+  (`dep-da4348s9v7es73fsnl0g`, PR #5) live throughout - `/health/`
+  returned 200 continuously, zero downtime. No fix shipped: the next
+  deploy (or a manual dashboard retry) is expected to succeed, since
+  the failure is a one-off connection blip, not a reproducible bug.
+  If this recurs, raising Neon's `suspend_timeout_seconds` above `0`
+  is the direct mitigation (trades a small amount of always-on compute
+  time for avoiding the cold-start window) - not applied here since it
+  wasn't asked for and has a minor cost tradeoff.
 - **`media/` has no persistent disk on Render Free** (Milestone 17,
   Phase 3) - resolved *for the Routine Archive specifically* by
   Milestone 18, Part D: `media/routines/*.pdf` is now git-tracked
@@ -6002,9 +6017,20 @@ Section 6 for the full list and manual-test instructions. Shipped via
 branch -> PR #5 -> CI (`test pass 2m58s`) -> `develop` -> `main`; no
 app code changed, so all 533 tests remain unaffected.
 
-**Verification still pending** (not yet done as of this write-up):
-confirming the secrets are actually set in the GitHub repo, and a
-real `workflow_dispatch` dry run against production.
+**Verification: done.** All four secrets were set via `gh secret set`
+(each piped from a scratchpad file deleted immediately after, same
+handling as the Render DB URL in Milestone 18 - values never
+committed or logged). A manual `workflow_dispatch` dry run
+(`command=all`, `dry_run=true`) then ran clean against the live Neon
+database: `Would send 2 daily agenda email(s)`, `0` for the other
+four, no errors. The scheduler is genuinely live now - the next real
+hourly/daily trigger will actually send.
+
+One unrelated finding surfaced while checking on this: the very next
+Render deploy (PR #6, docs-only) failed on a transient Neon cold-start
+SSL drop during `migrate` - see the new Known Issues entry above.
+Production was unaffected (previous deploy stayed live throughout);
+no fix needed, just noted for the record.
 
 ## Next Milestone
 
@@ -6013,11 +6039,9 @@ per Milestone 18) with real users and real data - deployment itself is
 done, not pending. `plan_v1.md` is the master V1 roadmap from here;
 its own priority order, cross-checked against this document, is:
 
-1. **GitHub Actions scheduler (`plan_v1.md` Phase A) - shipped
-   (Milestone 19), verification pending.** The workflow exists and is
-   live on `main`; what remains is setting the four required secrets
-   in the GitHub repo and running a `workflow_dispatch` dry run
-   against production before trusting the real schedules.
+1. **GitHub Actions scheduler (`plan_v1.md` Phase A) - shipped and
+   verified (Milestone 19).** Live on `main`, secrets set, manual dry
+   run passed against production. Fully done.
 2. **UI refinement (`plan_v1.md` Phase G)** - table-polish (numeric
    alignment, Milestone 13's Known Issues), a full page-by-page dark-
    mode sweep beyond shared-component coverage, resolving
@@ -6025,8 +6049,8 @@ its own priority order, cross-checked against this document, is:
    Issues).
 3. **Production security audit, full reminder acceptance test, backup/
    recovery documentation, final smoke test, monitoring** (`plan_v1.md`
-   Phases J-O) - none started yet; K/L specifically need the scheduler
-   above verified first.
+   Phases J-O) - none started yet; the scheduler they depend on
+   (K/L) is now verified and ready to test against.
 4. Smaller/ongoing: per-user timezone-aware reminder triggers
    (Milestone 15/15.1's Known Issue, still open), GitHub branch
    protection on `main` once the repo goes public or the account
