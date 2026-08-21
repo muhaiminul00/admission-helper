@@ -24,15 +24,6 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             today_lectures=today_lectures,
             today_exams=today_exams,
             has_today_routine=today_lectures.exists() or today_exams.exists(),
-            upcoming_lecture=(
-                Lecture.objects.filter(lecture_date__gt=today)
-                .select_related("subject")
-                .order_by("lecture_date", "start_time")
-                .first()
-            ),
-            upcoming_exam=(
-                Exam.objects.filter(exam_date__gt=today).order_by("exam_date").first()
-            ),
         )
         context.update(get_dashboard_stats(self.request.user))
         context.update(get_dashboard_widgets(self.request.user))

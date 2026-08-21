@@ -5,38 +5,38 @@
 
 <section class="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
     <div class="{% card_classes %}">
-        <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">Strongest Subject</p>
+        <p class="text-xs text-ink-muted uppercase tracking-wide mb-1">Strongest Subject</p>
         {% if subject_insights.strongest %}
-            <a href="{% url 'subject-detail' subject_insights.strongest.subject.pk %}" class="font-medium text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">{{ subject_insights.strongest.subject.name }}</a>
-            <p class="text-sm text-gray-500">{{ subject_insights.strongest.percentage }}% complete</p>
+            <a href="{% url 'subject-detail' subject_insights.strongest.subject.pk %}" class="font-medium text-accent hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">{{ subject_insights.strongest.subject.name }}</a>
+            <p class="text-sm text-ink-muted">{{ subject_insights.strongest.percentage }}% complete</p>
         {% else %}
-            <p class="text-gray-500 text-sm">No data yet.</p>
+            <p class="text-ink-muted text-sm">No data yet.</p>
         {% endif %}
     </div>
     <div class="{% card_classes %}">
-        <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">Weakest Subject</p>
+        <p class="text-xs text-ink-muted uppercase tracking-wide mb-1">Weakest Subject</p>
         {% if subject_insights.weakest %}
-            <a href="{% url 'subject-detail' subject_insights.weakest.subject.pk %}" class="font-medium text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">{{ subject_insights.weakest.subject.name }}</a>
-            <p class="text-sm text-gray-500">{{ subject_insights.weakest.percentage }}% complete</p>
+            <a href="{% url 'subject-detail' subject_insights.weakest.subject.pk %}" class="font-medium text-accent hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">{{ subject_insights.weakest.subject.name }}</a>
+            <p class="text-sm text-ink-muted">{{ subject_insights.weakest.percentage }}% complete</p>
         {% else %}
-            <p class="text-gray-500 text-sm">No data yet.</p>
+            <p class="text-ink-muted text-sm">No data yet.</p>
         {% endif %}
     </div>
     {% include "components/metric_card.html" with label="Avg. Speed" value=average_speed unit=" topics/day" sublabel="on active study days" %}
     <div class="{% card_classes %}">
-        <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">Study Streak</p>
-        <p class="font-medium">{{ study_streak.current_streak }} day{{ study_streak.current_streak|pluralize }} <span class="text-gray-400 text-sm">current</span></p>
-        <p class="text-sm text-gray-500">{{ study_streak.longest_streak }} day{{ study_streak.longest_streak|pluralize }} longest</p>
+        <p class="text-xs text-ink-muted uppercase tracking-wide mb-1">Study Streak</p>
+        <p class="font-medium">{{ study_streak.current_streak }} day{{ study_streak.current_streak|pluralize }} <span class="text-ink-faint text-sm">current</span></p>
+        <p class="text-sm text-ink-muted">{{ study_streak.longest_streak }} day{{ study_streak.longest_streak|pluralize }} longest</p>
     </div>
 </section>
 
 <section class="mb-8">
-    <h2 class="text-lg font-medium mb-3 text-gray-800">Subject Ranking</h2>
+    <h2 class="text-lg font-medium mb-3 text-ink">Subject Ranking</h2>
     <div class="overflow-x-auto">
-        <table class="w-full bg-white border border-gray-200 rounded-lg text-sm">
+        <table class="w-full bg-surface border border-line rounded-lg text-sm">
             <caption class="sr-only">Subjects ranked by completion percentage</caption>
             <thead>
-                <tr class="text-left border-b bg-gray-50">
+                <tr class="text-left border-b bg-surface-quiet">
                     <th class="p-2" scope="col">#</th>
                     <th class="p-2" scope="col">Subject</th>
                     <th class="p-2" scope="col">Completion</th>
@@ -46,10 +46,10 @@
             </thead>
             <tbody>
                 {% for row in subject_insights.ranking %}
-                    <tr class="border-b last:border-0 hover:bg-gray-50">
-                        <td class="p-2 text-gray-500">{{ row.rank }}</td>
+                    <tr class="border-b last:border-0 hover:bg-surface-quiet">
+                        <td class="p-2 text-ink-muted">{{ row.rank }}</td>
                         <td class="p-2">
-                            <a href="{% url 'subject-detail' row.subject.pk %}" class="text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">{{ row.subject.name }}</a>
+                            <a href="{% url 'subject-detail' row.subject.pk %}" class="text-accent hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">{{ row.subject.name }}</a>
                         </td>
                         <td class="p-2">
                             {% include "components/progress_bar.html" with percentage=row.percentage size="sm" width_class="w-32" show_label=True %}
@@ -64,12 +64,12 @@
 </section>
 
 <section class="mb-8">
-    <h2 class="text-lg font-medium mb-3 text-gray-800">Completion Trend by Subject</h2>
+    <h2 class="text-lg font-medium mb-3 text-ink">Completion Trend by Subject</h2>
     <div class="overflow-x-auto">
-        <table class="w-full bg-white border border-gray-200 rounded-lg text-sm">
+        <table class="w-full bg-surface border border-line rounded-lg text-sm">
             <caption class="sr-only">Topic completions by subject over three time windows</caption>
             <thead>
-                <tr class="text-left border-b bg-gray-50">
+                <tr class="text-left border-b bg-surface-quiet">
                     <th class="p-2" scope="col">Subject</th>
                     <th class="p-2" scope="col">Today</th>
                     <th class="p-2" scope="col">Last 7 Days</th>
@@ -78,9 +78,9 @@
             </thead>
             <tbody>
                 {% for row in subject_trend %}
-                    <tr class="border-b last:border-0 hover:bg-gray-50">
+                    <tr class="border-b last:border-0 hover:bg-surface-quiet">
                         <td class="p-2">
-                            <a href="{% url 'subject-detail' row.subject.pk %}" class="text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">{{ row.subject.name }}</a>
+                            <a href="{% url 'subject-detail' row.subject.pk %}" class="text-accent hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">{{ row.subject.name }}</a>
                         </td>
                         <td class="p-2">{{ row.today }}</td>
                         <td class="p-2">{{ row.last_7_days }}</td>
@@ -94,18 +94,18 @@
 
 <section class="mb-8 grid gap-4 lg:grid-cols-2">
     <div>
-        <h2 class="text-lg font-medium mb-3 text-gray-800">Highest Priority Chapters</h2>
-        <ul class="bg-white border border-gray-200 rounded-lg divide-y text-sm">
+        <h2 class="text-lg font-medium mb-3 text-ink">Highest Priority Chapters</h2>
+        <ul class="bg-surface border border-line rounded-lg divide-y text-sm">
             {% for row in priority_chapters %}
-                <li class="p-3 hover:bg-gray-50">
+                <li class="p-3 hover:bg-surface-quiet">
                     <div class="flex flex-wrap justify-between items-center gap-2 mb-1">
-                        <a href="{% url 'chapter-detail' row.chapter.pk %}" class="text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">{{ row.chapter.subject.name }} &middot; {{ row.chapter.get_paper_display }} &middot; Ch. {{ row.chapter.chapter_no }}</a>
+                        <a href="{% url 'chapter-detail' row.chapter.pk %}" class="text-accent hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">{{ row.chapter.subject.name }} &middot; {{ row.chapter.get_paper_display }} &middot; Ch. {{ row.chapter.chapter_no }}</a>
                         {% if row.in_upcoming_exam %}
                             {% include "components/badge.html" with text="In upcoming exam" classes=danger_badge %}
                         {% endif %}
                     </div>
-                    {% include "components/progress_bar.html" with percentage=row.percentage size="sm" color_class="bg-amber-600" %}
-                    <p class="text-gray-500 text-xs mt-1">{{ row.remaining }} remaining &middot; priority score {{ row.priority_score }}</p>
+                    {% include "components/progress_bar.html" with percentage=row.percentage size="sm" color_class="bg-warning" %}
+                    <p class="text-ink-muted text-xs mt-1">{{ row.remaining }} remaining &middot; priority score {{ row.priority_score }}</p>
                 </li>
             {% empty %}
                 <li>{% include "components/empty_state.html" with message="Nothing pending - great work!" %}</li>
@@ -113,17 +113,17 @@
         </ul>
     </div>
     <div>
-        <h2 class="text-lg font-medium mb-3 text-gray-800">Neglected Chapters</h2>
-        <ul class="bg-white border border-gray-200 rounded-lg divide-y text-sm">
+        <h2 class="text-lg font-medium mb-3 text-ink">Neglected Chapters</h2>
+        <ul class="bg-surface border border-line rounded-lg divide-y text-sm">
             {% for row in neglected_chapters %}
-                <li class="p-3 hover:bg-gray-50">
+                <li class="p-3 hover:bg-surface-quiet">
                     <div class="flex flex-wrap justify-between items-center gap-2 mb-1">
-                        <a href="{% url 'chapter-detail' row.chapter.pk %}" class="text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">{{ row.chapter.subject.name }} &middot; {{ row.chapter.get_paper_display }} &middot; Ch. {{ row.chapter.chapter_no }}</a>
-                        <span class="text-gray-400 text-xs">
+                        <a href="{% url 'chapter-detail' row.chapter.pk %}" class="text-accent hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">{{ row.chapter.subject.name }} &middot; {{ row.chapter.get_paper_display }} &middot; Ch. {{ row.chapter.chapter_no }}</a>
+                        <span class="text-ink-faint text-xs">
                             {% if row.last_activity %}last touched {{ row.last_activity|date:"M j" }}{% else %}never touched{% endif %}
                         </span>
                     </div>
-                    {% include "components/progress_bar.html" with percentage=row.percentage size="sm" color_class="bg-red-500" %}
+                    {% include "components/progress_bar.html" with percentage=row.percentage size="sm" color_class="bg-danger" %}
                 </li>
             {% empty %}
                 <li>{% include "components/empty_state.html" with message="No neglected chapters - nice work staying on top of things." %}</li>
@@ -131,12 +131,12 @@
         </ul>
     </div>
     <div>
-        <h2 class="text-lg font-medium mb-3 text-gray-800">Most Unfinished Chapters</h2>
-        <ul class="bg-white border border-gray-200 rounded-lg divide-y text-sm">
+        <h2 class="text-lg font-medium mb-3 text-ink">Most Unfinished Chapters</h2>
+        <ul class="bg-surface border border-line rounded-lg divide-y text-sm">
             {% for row in most_unfinished_chapters %}
-                <li class="p-3 hover:bg-gray-50 flex flex-wrap justify-between items-center gap-2">
-                    <a href="{% url 'chapter-detail' row.chapter.pk %}" class="text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">{{ row.chapter.subject.name }} &middot; Ch. {{ row.chapter.chapter_no }}</a>
-                    <span class="text-gray-500">{{ row.remaining }} remaining</span>
+                <li class="p-3 hover:bg-surface-quiet flex flex-wrap justify-between items-center gap-2">
+                    <a href="{% url 'chapter-detail' row.chapter.pk %}" class="text-accent hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">{{ row.chapter.subject.name }} &middot; Ch. {{ row.chapter.chapter_no }}</a>
+                    <span class="text-ink-muted">{{ row.remaining }} remaining</span>
                 </li>
             {% empty %}
                 <li>{% include "components/empty_state.html" with message="Nothing pending." %}</li>
@@ -144,12 +144,12 @@
         </ul>
     </div>
     <div>
-        <h2 class="text-lg font-medium mb-3 text-gray-800">Most Completed Chapters</h2>
-        <ul class="bg-white border border-gray-200 rounded-lg divide-y text-sm">
+        <h2 class="text-lg font-medium mb-3 text-ink">Most Completed Chapters</h2>
+        <ul class="bg-surface border border-line rounded-lg divide-y text-sm">
             {% for row in most_completed_chapters %}
-                <li class="p-3 hover:bg-gray-50 flex flex-wrap justify-between items-center gap-2">
-                    <a href="{% url 'chapter-detail' row.chapter.pk %}" class="text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">{{ row.chapter.subject.name }} &middot; Ch. {{ row.chapter.chapter_no }}</a>
-                    <span class="text-emerald-700">{{ row.percentage }}%</span>
+                <li class="p-3 hover:bg-surface-quiet flex flex-wrap justify-between items-center gap-2">
+                    <a href="{% url 'chapter-detail' row.chapter.pk %}" class="text-accent hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">{{ row.chapter.subject.name }} &middot; Ch. {{ row.chapter.chapter_no }}</a>
+                    <span class="text-success">{{ row.percentage }}%</span>
                 </li>
             {% empty %}
                 <li>{% include "components/empty_state.html" with message="No data yet." %}</li>
@@ -160,13 +160,13 @@
 
 <section class="mb-8 grid gap-4 lg:grid-cols-3">
     <div>
-        <h2 class="text-lg font-medium mb-3 text-gray-800">Longest Untouched Lectures</h2>
-        <ul class="bg-white border border-gray-200 rounded-lg divide-y text-sm">
+        <h2 class="text-lg font-medium mb-3 text-ink">Longest Untouched Lectures</h2>
+        <ul class="bg-surface border border-line rounded-lg divide-y text-sm">
             {% for row in longest_untouched_lectures %}
-                <li class="p-3 hover:bg-gray-50">
-                    <a href="{% url 'lecture-detail' row.lecture.lecture_code %}" class="text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">{{ row.lecture.lecture_code }}</a>
-                    <span class="text-gray-500"> &mdash; {{ row.lecture.subject.name }}</span>
-                    <p class="text-gray-400 text-xs">
+                <li class="p-3 hover:bg-surface-quiet">
+                    <a href="{% url 'lecture-detail' row.lecture.lecture_code %}" class="text-accent hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">{{ row.lecture.lecture_code }}</a>
+                    <span class="text-ink-muted"> &mdash; {{ row.lecture.subject.name }}</span>
+                    <p class="text-ink-faint text-xs">
                         {% if row.lecture.lecture_date %}scheduled {{ row.lecture.lecture_date }}{% else %}not scheduled (self-study){% endif %}
                     </p>
                 </li>
@@ -176,13 +176,13 @@
         </ul>
     </div>
     <div>
-        <h2 class="text-lg font-medium mb-3 text-gray-800">Recently Completed Lectures</h2>
-        <ul class="bg-white border border-gray-200 rounded-lg divide-y text-sm">
+        <h2 class="text-lg font-medium mb-3 text-ink">Recently Completed Lectures</h2>
+        <ul class="bg-surface border border-line rounded-lg divide-y text-sm">
             {% for row in recently_completed_lectures %}
-                <li class="p-3 hover:bg-gray-50">
-                    <a href="{% url 'lecture-detail' row.lecture.lecture_code %}" class="text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">{{ row.lecture.lecture_code }}</a>
-                    <span class="text-gray-500"> &mdash; {{ row.lecture.subject.name }}</span>
-                    <p class="text-gray-400 text-xs">completed {{ row.completed_at|date:"M j, H:i" }}</p>
+                <li class="p-3 hover:bg-surface-quiet">
+                    <a href="{% url 'lecture-detail' row.lecture.lecture_code %}" class="text-accent hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">{{ row.lecture.lecture_code }}</a>
+                    <span class="text-ink-muted"> &mdash; {{ row.lecture.subject.name }}</span>
+                    <p class="text-ink-faint text-xs">completed {{ row.completed_at|date:"M j, H:i" }}</p>
                 </li>
             {% empty %}
                 <li>{% include "components/empty_state.html" with message="No completed lectures yet." %}</li>
@@ -190,12 +190,12 @@
         </ul>
     </div>
     <div>
-        <h2 class="text-lg font-medium mb-3 text-gray-800">Backlog</h2>
-        <ul class="bg-white border border-gray-200 rounded-lg divide-y text-sm">
+        <h2 class="text-lg font-medium mb-3 text-ink">Backlog</h2>
+        <ul class="bg-surface border border-line rounded-lg divide-y text-sm">
             {% for row in backlog_lectures %}
-                <li class="p-3 hover:bg-gray-50 flex flex-wrap justify-between items-center gap-2">
-                    <a href="{% url 'lecture-detail' row.lecture.lecture_code %}" class="text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">{{ row.lecture.lecture_code }}</a>
-                    <span class="text-gray-500">{{ row.remaining }} left</span>
+                <li class="p-3 hover:bg-surface-quiet flex flex-wrap justify-between items-center gap-2">
+                    <a href="{% url 'lecture-detail' row.lecture.lecture_code %}" class="text-accent hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">{{ row.lecture.lecture_code }}</a>
+                    <span class="text-ink-muted">{{ row.remaining }} left</span>
                 </li>
             {% empty %}
                 <li>{% include "components/empty_state.html" with message="No backlog - you're caught up!" %}</li>
@@ -205,21 +205,21 @@
 </section>
 
 <section class="mb-8">
-    <h2 class="text-lg font-medium mb-3 text-gray-800">Study Heatmap <span class="text-gray-400 text-sm font-normal">(last 35 days)</span></h2>
+    <h2 class="text-lg font-medium mb-3 text-ink">Study Heatmap <span class="text-ink-faint text-sm font-normal">(last 35 days)</span></h2>
     <div class="{% card_classes %}">
         <div class="grid grid-cols-7 gap-1" style="max-width: 280px;">
             {% for day in daily_trend %}
                 <div class="w-9 h-9 rounded
-                    {% if day.level == 0 %}bg-gray-100{% elif day.level == 1 %}bg-emerald-200{% elif day.level == 2 %}bg-emerald-400{% else %}bg-emerald-600{% endif %}"
+                    {% if day.level == 0 %}bg-surface-quiet{% elif day.level == 1 %}bg-success-wash{% elif day.level == 2 %}bg-success/60{% else %}bg-success{% endif %}"
                     title="{{ day.date }}: {{ day.count }} completed"></div>
             {% endfor %}
         </div>
-        <div class="flex items-center gap-1 mt-3 text-xs text-gray-500">
+        <div class="flex items-center gap-1 mt-3 text-xs text-ink-muted">
             <span>Less</span>
-            <div class="w-3 h-3 rounded bg-gray-100"></div>
-            <div class="w-3 h-3 rounded bg-emerald-200"></div>
-            <div class="w-3 h-3 rounded bg-emerald-400"></div>
-            <div class="w-3 h-3 rounded bg-emerald-600"></div>
+            <div class="w-3 h-3 rounded bg-surface-quiet"></div>
+            <div class="w-3 h-3 rounded bg-success-wash"></div>
+            <div class="w-3 h-3 rounded bg-success/60"></div>
+            <div class="w-3 h-3 rounded bg-success"></div>
             <span>More</span>
         </div>
     </div>
@@ -227,23 +227,23 @@
 
 <section class="mb-8 grid gap-4 lg:grid-cols-2">
     <div>
-        <h2 class="text-lg font-medium mb-3 text-gray-800">Weekly Study Distribution</h2>
+        <h2 class="text-lg font-medium mb-3 text-ink">Weekly Study Distribution</h2>
         <div class="{% card_classes %} flex items-end justify-between gap-2" style="height: 140px;">
             {% for row in weekly_distribution %}
                 <div class="flex flex-col items-center justify-end h-full flex-1">
-                    <div class="w-full bg-blue-500 rounded-t" style="height: {{ row.count_pct }}%; min-height: 2px;" title="{{ row.count }} completed"></div>
-                    <span class="text-xs text-gray-500 mt-1">{{ row.weekday|slice:":3" }}</span>
+                    <div class="w-full bg-accent rounded-t" style="height: {{ row.count_pct }}%; min-height: 2px;" title="{{ row.count }} completed"></div>
+                    <span class="text-xs text-ink-muted mt-1">{{ row.weekday|slice:":3" }}</span>
                 </div>
             {% endfor %}
         </div>
     </div>
     <div>
-        <h2 class="text-lg font-medium mb-3 text-gray-800">Monthly Completion Timeline</h2>
+        <h2 class="text-lg font-medium mb-3 text-ink">Monthly Completion Timeline</h2>
         <div class="{% card_classes %} flex items-end justify-between gap-2" style="height: 140px;">
             {% for row in monthly_timeline %}
                 <div class="flex flex-col items-center justify-end h-full flex-1">
                     <div class="w-full bg-indigo-500 rounded-t" style="height: {{ row.count_pct }}%; min-height: 2px;" title="{{ row.count }} completed"></div>
-                    <span class="text-xs text-gray-500 mt-1">{{ row.month|date:"M" }}</span>
+                    <span class="text-xs text-ink-muted mt-1">{{ row.month|date:"M" }}</span>
                 </div>
             {% endfor %}
         </div>
@@ -251,36 +251,36 @@
 </section>
 
 <section class="mb-8">
-    <h2 class="text-lg font-medium mb-3 text-gray-800">Revision Insights</h2>
+    <h2 class="text-lg font-medium mb-3 text-ink">Revision Insights</h2>
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {% include "components/metric_card.html" with label="Revision Completion" value=revision_insights.completion_percentage unit="%" %}
-        {% class_if_positive revision_insights.overdue_count "text-red-600" as overdue_class %}
+        {% class_if_positive revision_insights.overdue_count "text-danger" as overdue_class %}
         {% include "components/metric_card.html" with label="Overdue" value=revision_insights.overdue_count value_class=overdue_class %}
         {% include "components/metric_card.html" with label="Workload" value=revision_insights.workload unit=" pending" sublabel=revision_insights.upcoming_load|stringformat:"s"|add:" due in the next 7 days" %}
         {% include "components/metric_card.html" with label="Exam Ready" value=revision_insights.exam_ready_count unit=" lectures" %}
         {% include "components/metric_card.html" with label="Avg. Revision Delay" value=revision_insights.average_delay unit=" days" sublabel="negative = completed early" %}
         <div class="{% card_classes %}">
-            <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">Revision Streak</p>
+            <p class="text-xs text-ink-muted uppercase tracking-wide mb-1">Revision Streak</p>
             <p class="font-medium">{{ revision_insights.streak.current_streak }} day{{ revision_insights.streak.current_streak|pluralize }}</p>
-            <p class="text-sm text-gray-500">{{ revision_insights.streak.longest_streak }} day{{ revision_insights.streak.longest_streak|pluralize }} longest</p>
+            <p class="text-sm text-ink-muted">{{ revision_insights.streak.longest_streak }} day{{ revision_insights.streak.longest_streak|pluralize }} longest</p>
         </div>
     </div>
 </section>
 
 <section class="mb-8">
-    <h2 class="text-lg font-medium mb-3 text-gray-800">Exam Readiness Insights</h2>
+    <h2 class="text-lg font-medium mb-3 text-ink">Exam Readiness Insights</h2>
     <div class="grid gap-4 sm:grid-cols-2">
         {% for row in exam_insights %}
             <div class="{% card_classes %}">
                 <div class="flex justify-between items-start mb-2 gap-2">
                     <div>
-                        <a href="{% url 'exam-detail' row.exam.pk %}" class="font-medium text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">{{ row.exam.exam_name }}</a>
-                        <p class="text-xs text-gray-500">{{ row.exam.exam_date }}</p>
+                        <a href="{% url 'exam-detail' row.exam.pk %}" class="font-medium text-accent hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">{{ row.exam.exam_name }}</a>
+                        <p class="text-xs text-ink-muted">{{ row.exam.exam_date }}</p>
                     </div>
                     {% include "components/badge.html" with text=row.confidence_label secondary=row.readiness_score classes=row.confidence_badge_class %}
                 </div>
                 {% include "components/progress_bar.html" with percentage=row.readiness_score size="sm" %}
-                <p class="text-xs text-gray-500 mt-2">
+                <p class="text-xs text-ink-muted mt-2">
                     {{ row.completed_topics }}/{{ row.total_topics }} topics covered
                     ({{ row.missing_percentage }}% missing) &middot;
                     {{ row.completed_lecture_count }}/{{ row.covered_lecture_count }} lectures fully done &middot;

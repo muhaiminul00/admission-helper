@@ -5,6 +5,6 @@
    has in scope) is visible to it same as any {% include %}.
    Context vars: content_template (required - a template path),
    padding (optional, default "p-4"), extra_classes (optional). {% endcomment %}
-<div class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg {{ padding|default:'p-4' }} {{ extra_classes }}">
+<div class="bg-surface border border-line rounded-lg {{ padding|default:'p-4' }} {{ extra_classes }}">
     {% include content_template %}
 </div>

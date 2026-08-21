@@ -10,13 +10,13 @@
 {% include "components/smart_back.html" with fallback_url=routine_list_url label="Routine" %}
 
 <div class="flex flex-wrap items-center gap-2 mt-2 mb-1">
-    <h1 class="text-2xl font-semibold text-gray-900">{{ lecture.title|default:lecture.lecture_code }}</h1>
+    <h1 class="text-2xl font-semibold text-ink">{{ lecture.title|default:lecture.lecture_code }}</h1>
     {% if is_exam_ready %}
         {% include "components/badge.html" with text="Exam Ready" classes=positive_badge %}
     {% endif %}
 </div>
-<p class="text-gray-600 mb-2">
-    <a href="{% url 'subject-detail' lecture.subject.pk %}" class="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">{{ lecture.subject.name }}</a>
+<p class="text-ink-muted mb-2">
+    <a href="{% url 'subject-detail' lecture.subject.pk %}" class="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">{{ lecture.subject.name }}</a>
     &middot; {{ lecture.lecture_code }} &middot;
     {% if lecture.lecture_date %}
         {{ lecture.lecture_date }}{% if lecture.day %} ({{ lecture.day }}){% endif %}
@@ -28,21 +28,21 @@
 
 <p class="flex flex-wrap gap-x-4 gap-y-1 text-sm mb-6">
     {% if previous_lecture %}
-        <a href="{% url 'lecture-detail' previous_lecture.lecture_code %}" class="text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">&larr; {{ previous_lecture.lecture_code }}</a>
+        <a href="{% url 'lecture-detail' previous_lecture.lecture_code %}" class="text-accent hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">&larr; {{ previous_lecture.lecture_code }}</a>
     {% endif %}
     {% if next_lecture %}
-        <a href="{% url 'lecture-detail' next_lecture.lecture_code %}" class="text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">{{ next_lecture.lecture_code }} &rarr;</a>
+        <a href="{% url 'lecture-detail' next_lecture.lecture_code %}" class="text-accent hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">{{ next_lecture.lecture_code }} &rarr;</a>
     {% endif %}
 </p>
 
 {% if covering_exams %}
     <section class="mb-6">
-        <h2 class="text-lg font-medium mb-2 text-gray-800">Upcoming Exam{{ covering_exams|length|pluralize }}</h2>
+        <h2 class="text-lg font-medium mb-2 text-ink">Upcoming Exam{{ covering_exams|length|pluralize }}</h2>
         <ul class="flex flex-wrap gap-2">
             {% for exam in covering_exams %}
                 <li>
-                    <a href="{% url 'exam-detail' exam.pk %}" class="inline-block px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
-                        {{ exam.exam_name }} <span class="text-gray-500">({{ exam.exam_date }})</span>
+                    <a href="{% url 'exam-detail' exam.pk %}" class="inline-block px-3 py-1.5 bg-surface border border-line rounded-lg text-sm text-accent hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+                        {{ exam.exam_name }} <span class="text-ink-muted">({{ exam.exam_date }})</span>
                     </a>
                 </li>
             {% endfor %}
@@ -52,11 +52,11 @@
 
 {% if revision_schedules %}
     <section class="mb-6">
-        <h2 class="text-lg font-medium mb-2 text-gray-800">Revision Schedule</h2>
-        <ul class="bg-white border border-gray-200 rounded-lg divide-y text-sm">
+        <h2 class="text-lg font-medium mb-2 text-ink">Revision Schedule</h2>
+        <ul class="bg-surface border border-line rounded-lg divide-y text-sm">
             {% for schedule in revision_schedules %}
-                <li class="p-2 hover:bg-gray-50 flex flex-wrap justify-between items-center gap-2">
-                    <a href="{% url 'revision-detail' schedule.pk %}" class="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
+                <li class="p-2 hover:bg-surface-quiet flex flex-wrap justify-between items-center gap-2">
+                    <a href="{% url 'revision-detail' schedule.pk %}" class="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">
                         {{ schedule.get_revision_level_display }}
                     </a>
                     {% if schedule.status == "completed" %}
@@ -71,16 +71,16 @@
 {% endif %}
 
 {% if lecture.notes %}
-    <p class="bg-gray-100 border border-gray-200 rounded-lg p-3 text-sm mb-6">{{ lecture.notes }}</p>
+    <p class="bg-surface-quiet border border-line rounded-lg p-3 text-sm mb-6">{{ lecture.notes }}</p>
 {% endif %}
 
 <section class="mb-6">
-    <h2 class="text-lg font-medium mb-2 text-gray-800">Chapters Covered</h2>
+    <h2 class="text-lg font-medium mb-2 text-ink">Chapters Covered</h2>
     {% if chapters %}
-        <ul class="bg-white border border-gray-200 rounded-lg divide-y text-sm">
+        <ul class="bg-surface border border-line rounded-lg divide-y text-sm">
             {% for chapter in chapters %}
-                <li class="p-2 hover:bg-gray-50">
-                    <a href="{% url 'chapter-detail' chapter.pk %}" class="text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
+                <li class="p-2 hover:bg-surface-quiet">
+                    <a href="{% url 'chapter-detail' chapter.pk %}" class="text-accent hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">
                         {{ chapter }}
                     </a>
                 </li>
@@ -92,13 +92,13 @@
 </section>
 
 <section>
-    <h2 class="text-lg font-medium mb-2 text-gray-800">Topics</h2>
+    <h2 class="text-lg font-medium mb-2 text-ink">Topics</h2>
     {% if topics %}
         <div class="overflow-x-auto">
-            <table class="w-full bg-white border border-gray-200 rounded-lg text-sm">
+            <table class="w-full bg-surface border border-line rounded-lg text-sm">
                 <caption class="sr-only">Topics for this lecture and their completion status</caption>
                 <thead>
-                    <tr class="text-left border-b bg-gray-50">
+                    <tr class="text-left border-b bg-surface-quiet">
                         <th class="p-2" scope="col">#</th>
                         <th class="p-2" scope="col">Topic</th>
                         <th class="p-2" scope="col">Chapter</th>

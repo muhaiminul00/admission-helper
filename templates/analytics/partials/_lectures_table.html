@@ -1,8 +1,8 @@
 <div class="overflow-x-auto">
-    <table class="w-full bg-white border border-gray-200 rounded-lg text-sm">
+    <table class="w-full bg-surface border border-line rounded-lg text-sm">
         <caption class="sr-only">Lecture completion analytics</caption>
         <thead>
-            <tr class="text-left border-b bg-gray-50">
+            <tr class="text-left border-b bg-surface-quiet">
                 <th class="p-2" scope="col">Lecture Code</th>
                 <th class="p-2" scope="col">Subject</th>
                 <th class="p-2" scope="col">Total Topics</th>
@@ -12,13 +12,13 @@
         </thead>
         <tbody>
             {% for row in page_obj %}
-                <tr class="border-b last:border-0 hover:bg-gray-50">
+                <tr class="border-b last:border-0 hover:bg-surface-quiet">
                     <td class="p-2">
-                        <a href="{% url 'lecture-detail' row.lecture.lecture_code %}" class="text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
+                        <a href="{% url 'lecture-detail' row.lecture.lecture_code %}" class="text-accent hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">
                             {{ row.lecture.lecture_code }}
                         </a>
                         {% if not row.lecture.lecture_date %}
-                            <span class="text-gray-400 text-xs">(self-study)</span>
+                            <span class="text-ink-faint text-xs">(self-study)</span>
                         {% endif %}
                     </td>
                     <td class="p-2">{{ row.lecture.subject.name }}</td>

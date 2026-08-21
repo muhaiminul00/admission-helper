@@ -3,9 +3,9 @@
 {% with pct=event.extra.percentage|default:0 %}
 <div class="{% card_classes 'dense' %} flex flex-wrap justify-between items-center gap-3 text-sm">
     <div class="min-w-0">
-        <a href="{{ event.url }}" class="font-medium text-blue-700 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">{{ event.title }}</a>
-        <div class="text-xs text-gray-500 truncate">
-            <a href="{% url 'subject-detail' event.subject.pk %}" class="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">{{ event.subject.name }}</a>
+        <a href="{{ event.url }}" class="font-medium text-accent hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">{{ event.title }}</a>
+        <div class="text-xs text-ink-muted truncate">
+            <a href="{% url 'subject-detail' event.subject.pk %}" class="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">{{ event.subject.name }}</a>
             &middot; {{ event.code }}
         </div>
     </div>
@@ -13,13 +13,13 @@
         {% if event.extra.exam_ready %}
             {% include "components/badge.html" with text="Exam Ready" classes=positive_badge %}
         {% elif event.extra.pending_revisions %}
-            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-info-wash text-accent">
                 {{ event.extra.pending_revisions }} revision{{ event.extra.pending_revisions|pluralize }}
             </span>
         {% endif %}
         <div class="w-24">
             {% include "components/progress_bar.html" with percentage=pct size="sm" color_class=pct|pct_color %}
-            <div class="text-[11px] text-gray-500 mt-0.5 text-right">
+            <div class="text-[11px] text-ink-muted mt-0.5 text-right">
                 {{ event.extra.completed_topics|default:0 }}/{{ event.extra.total_topics|default:0 }}
             </div>
         </div>

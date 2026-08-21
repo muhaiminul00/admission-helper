@@ -9,16 +9,20 @@
    caller) rather than built at render time.
    Context vars: weeks (required - group_by_week()'s output, usually
    already run through attach_routine_week_numbers()), anchor
-   (optional), marker_border_class/marker_bg_class/marker_label
-   (required - the "TODAY"/"NEXT EXAM" divider), today_bg_class/
+   (optional), marker_border_class/marker_bg_class/marker_text_class/
+   marker_label (required - the "TODAY"/"NEXT EXAM" divider; the text
+   class must be the ink token paired with the bg token - Milestone 20 -
+   since bg-accent/bg-warning are light in one theme and dark in the
+   other, a plain hardcoded text-white would go unreadable in
+   whichever theme makes that token light), today_bg_class/
    today_border_class (required - the anchor day's highlight),
    card_template (required - the per-event card partial path),
    empty_message (required). {% endcomment %}
 {% for week in weeks %}
     <section class="mb-6">
-        <h2 class="sticky top-36 z-10 bg-gray-50 dark:bg-slate-900 px-1 py-2 text-sm font-semibold text-gray-600 dark:text-gray-400 border-b border-gray-200 dark:border-slate-700">
+        <h2 class="sticky top-36 z-10 bg-surface-quiet px-1 py-2 text-sm font-semibold text-ink-muted border-b border-line">
             {% if week.week_number %}
-                <a href="{% url 'routine-week' week.week_number %}" class="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
+                <a href="{% url 'routine-week' week.week_number %}" class="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">
                     Routine Week {{ week.week_number }}
                 </a>
             {% else %}
@@ -29,12 +33,12 @@
             {% if anchor and day.date == anchor %}
                 <div id="today-marker" class="my-4 flex items-center gap-2">
                     <div class="flex-1 border-t-2 {{ marker_border_class }}"></div>
-                    <span class="px-2 py-0.5 rounded {{ marker_bg_class }} text-white text-xs font-semibold tracking-wide">{{ marker_label }}</span>
+                    <span class="px-2 py-0.5 rounded {{ marker_bg_class }} {{ marker_text_class }} text-xs font-semibold tracking-wide">{{ marker_label }}</span>
                     <div class="flex-1 border-t-2 {{ marker_border_class }}"></div>
                 </div>
             {% endif %}
             <div class="mb-3 rounded {% if anchor and day.date == anchor %}{{ today_bg_class }} border {{ today_border_class }} p-2{% elif anchor and day.date < anchor %}opacity-75{% endif %}">
-                <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{{ day.date|date:"l, M j" }}</div>
+                <div class="text-xs font-medium text-ink-muted mb-1">{{ day.date|date:"l, M j" }}</div>
                 <div class="space-y-2">
                     {% for event in day.events %}
                         {% include card_template %}

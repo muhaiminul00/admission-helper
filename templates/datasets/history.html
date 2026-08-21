@@ -7,17 +7,17 @@
 {% url 'dataset-compare' as compare_link_url %}
 <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
     <div>
-        <h1 class="text-2xl font-semibold text-gray-900">Dataset History</h1>
-        <p class="mt-1 text-sm text-gray-500">Every imported dataset version and import attempt, read-only.</p>
+        <h1 class="text-2xl font-semibold text-ink">Dataset History</h1>
+        <p class="mt-1 text-sm text-ink-muted">Every imported dataset version and import attempt, read-only.</p>
     </div>
     <div class="flex gap-3 items-center">
-        <a href="{{ compare_link_url }}" class="text-sm text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">Compare CSVs &rarr;</a>
+        <a href="{{ compare_link_url }}" class="text-sm text-accent hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">Compare CSVs &rarr;</a>
         <button type="button"
                 hx-get="{{ dataset_history_url }}"
                 hx-target="#dataset-history-content"
                 hx-swap="outerHTML"
                 hx-indicator="#page-indicator"
-                class="text-sm border border-gray-300 rounded px-3 py-1.5 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+                class="text-sm border border-line rounded px-3 py-1.5 hover:bg-surface-quiet focus:outline-none focus-visible:ring-2 focus-visible:ring-accent">
             Refresh
         </button>
     </div>

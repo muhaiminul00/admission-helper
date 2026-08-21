@@ -39,7 +39,7 @@
             {% if progress.total_units > 32 %}
                 <div class="flex gap-0.5 {% if size == 'sm' %}h-2{% else %}h-3{% endif %}">
                     {% for segment in progress.segments %}
-                        <div class="flex-1 bg-gray-200 dark:bg-slate-700 rounded-sm overflow-hidden"
+                        <div class="flex-1 bg-surface-quiet rounded-sm overflow-hidden"
                              {% if tooltip|default_if_none:True %}title="{{ segment.label }}: {{ segment.count }}/{{ segment.total }} ({{ segment.percentage }}%)"{% endif %}>
                             <div class="{{ segment.color_class }} h-full" style="width: {{ segment.percentage }}%"></div>
                         </div>
@@ -53,7 +53,7 @@
                             <span class="rounded-sm inline-block
                                          {% if progress.total_units > 16 %}w-1.5{% else %}w-3{% endif %}
                                          {% if size == 'sm' %}h-2{% else %}h-3{% endif %}
-                                         {% if forloop.counter0 < segment.count %}{{ segment.color_class }}{% else %}bg-gray-200 dark:bg-slate-700{% endif %}"
+                                         {% if forloop.counter0 < segment.count %}{{ segment.color_class }}{% else %}bg-surface-quiet{% endif %}"
                                   {% if tooltip|default_if_none:True %}title="{{ segment.label }} {{ forloop.counter }}/{{ segment.total }}{% if forloop.counter0 < segment.count %} - done{% endif %}"{% endif %}></span>
                         {% endfor %}
                     {% endfor %}
@@ -61,11 +61,11 @@
             {% endif %}
         </div>
         {% if show_percentage|default_if_none:True %}
-            <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">{{ progress.completed_units }}/{{ progress.total_units }}</span>
+            <span class="text-xs text-ink-muted whitespace-nowrap">{{ progress.completed_units }}/{{ progress.total_units }}</span>
         {% endif %}
     </div>
     {% if show_legend %}
-        <div class="flex flex-wrap gap-3 mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+        <div class="flex flex-wrap gap-3 mt-1.5 text-xs text-ink-muted">
             {% for segment in progress.segments %}
                 <span class="inline-flex items-center gap-1">
                     <span class="inline-block w-2 h-2 rounded-sm {{ segment.color_class }}"></span>

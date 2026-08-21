@@ -8,34 +8,34 @@
 
 <div class="max-w-lg space-y-4">
     <div class="{% card_classes %}">
-        <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">Account</h2>
+        <h2 class="text-sm font-semibold text-ink-muted uppercase tracking-wide mb-3">Account</h2>
         <dl class="text-sm space-y-2">
             <div class="flex justify-between">
-                <dt class="text-gray-500 dark:text-gray-400">Username</dt>
-                <dd class="text-gray-900 dark:text-gray-100 font-medium">{{ user.username }}</dd>
+                <dt class="text-ink-muted">Username</dt>
+                <dd class="text-ink font-medium">{{ user.username }}</dd>
             </div>
             <div class="flex justify-between">
-                <dt class="text-gray-500 dark:text-gray-400">Email</dt>
-                <dd class="text-gray-900 dark:text-gray-100">{{ user.email|default:"Not set" }}</dd>
+                <dt class="text-ink-muted">Email</dt>
+                <dd class="text-ink">{{ user.email|default:"Not set" }}</dd>
             </div>
             <div class="flex justify-between">
-                <dt class="text-gray-500 dark:text-gray-400">Member since</dt>
-                <dd class="text-gray-900 dark:text-gray-100">{{ user.date_joined|date:"M j, Y" }}</dd>
+                <dt class="text-ink-muted">Member since</dt>
+                <dd class="text-ink">{{ user.date_joined|date:"M j, Y" }}</dd>
             </div>
         </dl>
     </div>
 
     <div class="{% card_classes %}">
-        <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">Settings</h2>
-        <ul class="text-sm divide-y divide-gray-100 dark:divide-slate-700">
+        <h2 class="text-sm font-semibold text-ink-muted uppercase tracking-wide mb-3">Settings</h2>
+        <ul class="text-sm divide-y divide-line">
             <li class="py-2">
-                <a href="{% url 'notification-preferences' %}" class="text-blue-600 dark:text-blue-400 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
+                <a href="{% url 'notification-preferences' %}" class="text-accent hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">
                     Notification Preferences
                 </a>
             </li>
             {% if user.is_staff %}
             <li class="py-2">
-                <a href="{% url 'reminder-admin' %}" class="text-blue-600 dark:text-blue-400 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
+                <a href="{% url 'reminder-admin' %}" class="text-accent hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">
                     Reminder Administration
                 </a>
             </li>

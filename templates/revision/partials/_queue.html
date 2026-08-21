@@ -7,12 +7,12 @@
 
 <section class="mb-6">
     {% include "components/section_header.html" with title="Overdue" count=overdue|length sticky=True %}
-    <ul class="bg-white border border-gray-200 rounded-lg divide-y text-sm">
+    <ul class="bg-surface border border-line rounded-lg divide-y text-sm">
         {% for schedule in overdue %}
-            <li class="p-3 hover:bg-gray-50 flex flex-wrap justify-between items-center gap-2">
-                <a href="{% url 'revision-detail' schedule.pk %}" class="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
+            <li class="p-3 hover:bg-surface-quiet flex flex-wrap justify-between items-center gap-2">
+                <a href="{% url 'revision-detail' schedule.pk %}" class="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">
                     <span class="font-medium">{{ schedule.lecture.lecture_code }}</span>
-                    <span class="text-gray-500"> &mdash; {{ schedule.lecture.subject.name }} &middot; {{ schedule.get_revision_level_display }}</span>
+                    <span class="text-ink-muted"> &mdash; {{ schedule.lecture.subject.name }} &middot; {{ schedule.get_revision_level_display }}</span>
                 </a>
                 {% include "components/badge.html" with text="Due" secondary=schedule.due_date classes=danger_badge %}
             </li>
@@ -23,19 +23,19 @@
 </section>
 
 <div id="today-marker" class="my-4 flex items-center gap-2">
-    <div class="flex-1 border-t-2 border-blue-500"></div>
-    <span class="px-2 py-0.5 rounded bg-blue-600 text-white text-xs font-semibold tracking-wide">TODAY</span>
-    <div class="flex-1 border-t-2 border-blue-500"></div>
+    <div class="flex-1 border-t-2 border-accent"></div>
+    <span class="px-2 py-0.5 rounded bg-accent text-accent-ink text-xs font-semibold tracking-wide">TODAY</span>
+    <div class="flex-1 border-t-2 border-accent"></div>
 </div>
 
 <section class="mb-6">
     {% include "components/section_header.html" with title="Due Today" count=due_today|length sticky=True %}
-    <ul class="bg-white border border-gray-200 rounded-lg divide-y text-sm">
+    <ul class="bg-surface border border-line rounded-lg divide-y text-sm">
         {% for schedule in due_today %}
-            <li class="p-3 hover:bg-gray-50 flex flex-wrap justify-between items-center gap-2">
-                <a href="{% url 'revision-detail' schedule.pk %}" class="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
+            <li class="p-3 hover:bg-surface-quiet flex flex-wrap justify-between items-center gap-2">
+                <a href="{% url 'revision-detail' schedule.pk %}" class="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">
                     <span class="font-medium">{{ schedule.lecture.lecture_code }}</span>
-                    <span class="text-gray-500"> &mdash; {{ schedule.lecture.subject.name }} &middot; {{ schedule.get_revision_level_display }}</span>
+                    <span class="text-ink-muted"> &mdash; {{ schedule.lecture.subject.name }} &middot; {{ schedule.get_revision_level_display }}</span>
                 </a>
                 {% include "components/badge.html" with text="today" classes=warning_badge %}
             </li>
@@ -47,12 +47,12 @@
 
 <section class="mb-6">
     {% include "components/section_header.html" with title="Upcoming" count=upcoming|length sticky=True %}
-    <ul class="bg-white border border-gray-200 rounded-lg divide-y text-sm">
+    <ul class="bg-surface border border-line rounded-lg divide-y text-sm">
         {% for schedule in upcoming %}
-            <li class="p-3 hover:bg-gray-50 flex flex-wrap justify-between items-center gap-2">
-                <a href="{% url 'revision-detail' schedule.pk %}" class="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
+            <li class="p-3 hover:bg-surface-quiet flex flex-wrap justify-between items-center gap-2">
+                <a href="{% url 'revision-detail' schedule.pk %}" class="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">
                     <span class="font-medium">{{ schedule.lecture.lecture_code }}</span>
-                    <span class="text-gray-500"> &mdash; {{ schedule.lecture.subject.name }} &middot; {{ schedule.get_revision_level_display }}</span>
+                    <span class="text-ink-muted"> &mdash; {{ schedule.lecture.subject.name }} &middot; {{ schedule.get_revision_level_display }}</span>
                 </a>
                 {% include "components/badge.html" with text="Due" secondary=schedule.due_date classes=info_badge %}
             </li>
@@ -64,12 +64,12 @@
 
 <section class="mb-6">
     {% include "components/section_header.html" with title="Completed" count=completed|length sticky=True %}
-    <ul class="bg-white border border-gray-200 rounded-lg divide-y text-sm">
+    <ul class="bg-surface border border-line rounded-lg divide-y text-sm">
         {% for schedule in completed %}
-            <li class="p-3 hover:bg-gray-50 flex flex-wrap justify-between items-center gap-2">
-                <a href="{% url 'revision-detail' schedule.pk %}" class="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
+            <li class="p-3 hover:bg-surface-quiet flex flex-wrap justify-between items-center gap-2">
+                <a href="{% url 'revision-detail' schedule.pk %}" class="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">
                     <span class="font-medium">{{ schedule.lecture.lecture_code }}</span>
-                    <span class="text-gray-500"> &mdash; {{ schedule.lecture.subject.name }} &middot; {{ schedule.get_revision_level_display }}</span>
+                    <span class="text-ink-muted"> &mdash; {{ schedule.lecture.subject.name }} &middot; {{ schedule.get_revision_level_display }}</span>
                 </a>
                 {% include "components/badge.html" with text="Completed" secondary=schedule.completed_at|date:"M j" classes=positive_badge %}
             </li>

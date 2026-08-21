@@ -1,8 +1,8 @@
 <div class="overflow-x-auto">
-    <table class="w-full bg-white border border-gray-200 rounded-lg text-sm">
+    <table class="w-full bg-surface border border-line rounded-lg text-sm">
         <caption class="sr-only">Exam readiness analytics</caption>
         <thead>
-            <tr class="text-left border-b bg-gray-50">
+            <tr class="text-left border-b bg-surface-quiet">
                 <th class="p-2" scope="col">Title</th>
                 <th class="p-2" scope="col">Date</th>
                 <th class="p-2" scope="col">Covered Lectures</th>
@@ -15,9 +15,9 @@
         </thead>
         <tbody>
             {% for row in rows %}
-                <tr class="border-b last:border-0 hover:bg-gray-50">
+                <tr class="border-b last:border-0 hover:bg-surface-quiet">
                     <td class="p-2">
-                        <a href="{% url 'exam-detail' row.exam.pk %}" class="text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
+                        <a href="{% url 'exam-detail' row.exam.pk %}" class="text-accent hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">
                             {{ row.exam.exam_name }}
                         </a>
                     </td>

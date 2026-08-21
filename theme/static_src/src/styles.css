@@ -16,3 +16,103 @@
   * the scope of this path.
   */
 @source "../../../**/*.{html,py,js}";
+
+/* Milestone 20 - Visual identity ("Indigo Study"). One set of semantic
+   color tokens, defined once here as plain CSS custom properties and
+   swapped as a whole under `.dark` - every `bg-surface`, `text-ink`,
+   etc. utility below then just works in both themes with no `dark:`
+   sibling class needed at any call site. This replaces the raw
+   Tailwind `gray-*`/`slate-*`/`blue-*` palette used ad hoc across
+   templates before this milestone, and is why older templates
+   (dashboard, progress) had inconsistent dark-mode coverage: they
+   never had one shared vocabulary to draw from. */
+:root {
+    --bg: #f5f6f9;
+    --surface: #ffffff;
+    --surface-quiet: #eceef4;
+    --line: #d8dce6;
+    --ink: #1c2130;
+    --ink-muted: #5c6478;
+    --ink-faint: #98a0b3;
+    --accent: #3b4fa1;
+    --accent-strong: #2d3c80;
+    --accent-ink: #ffffff;
+    --success: #3d8361;
+    --success-wash: #e6f2ec;
+    --success-ink: #ffffff;
+    --warning: #8a5f16;
+    --warning-wash: #f8eeda;
+    --warning-ink: #ffffff;
+    --danger: #b1443a;
+    --danger-wash: #f9e6e3;
+    --danger-ink: #ffffff;
+    --info: #2f7f97;
+    --info-wash: #e4f0f3;
+    --info-ink: #ffffff;
+    /* The header bar is deliberately not theme-reactive (a fixed dark
+       indigo chrome in both Light and Dark, matching what the original
+       slate-900/950 pairing already did) - defined only in :root, never
+       redefined under .dark. */
+    --nav: #1c2130;
+}
+
+.dark {
+    --bg: #14161d;
+    --surface: #1c2029;
+    --surface-quiet: #232833;
+    --line: #333a48;
+    --ink: #e6e8f0;
+    --ink-muted: #9aa1b5;
+    --ink-faint: #666e82;
+    --accent: #8b9bef;
+    --accent-strong: #a9b6f5;
+    --accent-ink: #12142a;
+    --success: #5fae86;
+    --success-wash: #1c2b23;
+    --success-ink: #0e1a13;
+    --warning: #d3a34c;
+    --warning-wash: #2c2416;
+    --warning-ink: #241f0a;
+    --danger: #d97e72;
+    --danger-wash: #301f1c;
+    --danger-ink: #2b0f0a;
+    --info: #5cb0c9;
+    --info-wash: #182a2e;
+    --info-ink: #08181c;
+}
+
+@theme inline {
+    --color-bg: var(--bg);
+    --color-surface: var(--surface);
+    --color-surface-quiet: var(--surface-quiet);
+    --color-line: var(--line);
+    --color-ink: var(--ink);
+    --color-ink-muted: var(--ink-muted);
+    --color-ink-faint: var(--ink-faint);
+    --color-accent: var(--accent);
+    --color-accent-strong: var(--accent-strong);
+    --color-accent-ink: var(--accent-ink);
+    --color-success: var(--success);
+    --color-success-wash: var(--success-wash);
+    --color-success-ink: var(--success-ink);
+    --color-warning: var(--warning);
+    --color-warning-wash: var(--warning-wash);
+    --color-warning-ink: var(--warning-ink);
+    --color-danger: var(--danger);
+    --color-danger-wash: var(--danger-wash);
+    --color-danger-ink: var(--danger-ink);
+    --color-info: var(--info);
+    --color-info-wash: var(--info-wash);
+    --color-info-ink: var(--info-ink);
+    --color-nav: var(--nav);
+
+    /* Newsreader for headings only (set below); Work Sans replaces the
+       default sans stack app-wide via this one override. */
+    --font-sans: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+    --font-serif: "Newsreader", Georgia, serif;
+}
+
+h1, h2, h3 {
+    font-family: var(--font-serif);
+    font-weight: 600;
+}

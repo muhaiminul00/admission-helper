@@ -13,7 +13,7 @@
     <div class="{% card_classes %}">
         {% if subject_row %}
             {% include "components/progress_meter.html" with progress=subject_progress size="md" show_legend=True %}
-            <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+            <p class="text-sm text-ink-muted mt-2">
                 {{ subject_row.completed }} / {{ subject_row.total }} topics completed &middot;
                 {{ subject_row.remaining }} remaining
             </p>
@@ -26,10 +26,10 @@
 <section class="mb-6">
     {% include "components/section_header.html" with title="Chapters" count=chapter_rows|length %}
     <div class="overflow-x-auto">
-        <table class="w-full bg-white border border-gray-200 rounded-lg text-sm">
+        <table class="w-full bg-surface border border-line rounded-lg text-sm">
             <caption class="sr-only">Chapters in {{ subject.name }}</caption>
             <thead>
-                <tr class="text-left border-b bg-gray-50">
+                <tr class="text-left border-b bg-surface-quiet">
                     <th scope="col" class="p-2">Paper</th>
                     <th scope="col" class="p-2">Chapter</th>
                     <th scope="col" class="p-2">Completion</th>
@@ -37,10 +37,10 @@
             </thead>
             <tbody>
                 {% for row in chapter_rows %}
-                    <tr class="border-b last:border-0 hover:bg-gray-50">
+                    <tr class="border-b last:border-0 hover:bg-surface-quiet">
                         <td class="p-2">{{ row.chapter.get_paper_display }}</td>
                         <td class="p-2">
-                            <a href="{% url 'chapter-detail' row.chapter.pk %}" class="text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
+                            <a href="{% url 'chapter-detail' row.chapter.pk %}" class="text-accent hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">
                                 Ch. {{ row.chapter.chapter_no }} &mdash; {{ row.chapter.name }}
                             </a>
                         </td>
@@ -49,7 +49,7 @@
                         </td>
                     </tr>
                 {% empty %}
-                    <tr><td colspan="3" class="p-4 text-center text-gray-500">No chapters recorded for this subject.</td></tr>
+                    <tr><td colspan="3" class="p-4 text-center text-ink-muted">No chapters recorded for this subject.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -59,19 +59,19 @@
 <section class="mb-6">
     {% include "components/section_header.html" with title="Lectures" count=lecture_rows|length %}
     <div class="overflow-x-auto">
-        <table class="w-full bg-white border border-gray-200 rounded-lg text-sm">
+        <table class="w-full bg-surface border border-line rounded-lg text-sm">
             <caption class="sr-only">Lectures in {{ subject.name }}</caption>
             <thead>
-                <tr class="text-left border-b bg-gray-50">
+                <tr class="text-left border-b bg-surface-quiet">
                     <th scope="col" class="p-2">Lecture</th>
                     <th scope="col" class="p-2">Completion</th>
                 </tr>
             </thead>
             <tbody>
                 {% for row in lecture_rows %}
-                    <tr class="border-b last:border-0 hover:bg-gray-50">
+                    <tr class="border-b last:border-0 hover:bg-surface-quiet">
                         <td class="p-2">
-                            <a href="{% url 'lecture-detail' row.lecture.lecture_code %}" class="text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
+                            <a href="{% url 'lecture-detail' row.lecture.lecture_code %}" class="text-accent hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">
                                 {{ row.lecture.lecture_code }}{% if row.lecture.title %} &mdash; {{ row.lecture.title }}{% endif %}
                             </a>
                         </td>
@@ -80,7 +80,7 @@
                         </td>
                     </tr>
                 {% empty %}
-                    <tr><td colspan="2" class="p-4 text-center text-gray-500">No lectures recorded for this subject.</td></tr>
+                    <tr><td colspan="2" class="p-4 text-center text-ink-muted">No lectures recorded for this subject.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -90,13 +90,13 @@
 {% if covering_exams %}
 <section>
     {% include "components/section_header.html" with title="Exams Covering This Subject" count=covering_exams|length %}
-    <ul class="bg-white border border-gray-200 rounded-lg divide-y text-sm">
+    <ul class="bg-surface border border-line rounded-lg divide-y text-sm">
         {% for exam in covering_exams %}
-            <li class="p-3 hover:bg-gray-50 flex justify-between items-center">
-                <a href="{% url 'exam-detail' exam.pk %}" class="text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
+            <li class="p-3 hover:bg-surface-quiet flex justify-between items-center">
+                <a href="{% url 'exam-detail' exam.pk %}" class="text-accent hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">
                     {{ exam.exam_name }}
                 </a>
-                <span class="text-gray-500 text-xs">{{ exam.exam_date }}</span>
+                <span class="text-ink-muted text-xs">{{ exam.exam_date }}</span>
             </li>
         {% endfor %}
     </ul>
