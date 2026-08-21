@@ -4132,6 +4132,132 @@ resulting CI runs passing.
 
 ---
 
+### Milestone 17.1 — Render Free Plan Bootstrap
+
+**Context.** Milestone 17's Blueprint assumed Render's paid tier
+(Shell access, One-Off Jobs, `type: cron` Scheduled Jobs). Once the
+account was actually on the Free plan, applying `render.yaml` failed
+outright - Render rejected the five `send_*` Scheduled Jobs with
+"plan free not valid for service type cron", and Free also provides
+neither Shell nor One-Off Jobs, so `createsuperuser` and the first
+`import_csv` run (both assumed to be run manually post-deploy in
+Milestone 17) had no way to execute at all.
+
+**Fixes, in the order they were needed:**
+
+1. Removed the five Scheduled Jobs from `render.yaml` entirely so the
+   Blueprint validates and applies on Free. The `send_*` commands
+   themselves are untouched and fully idempotent - they simply have no
+   scheduler invoking them yet (tracked below as an open gap; see
+   Milestone 18 and `plan_v1.md` Phase A).
+2. `preDeployCommand` (tried as a place to run `migrate`) is also
+   unsupported on Free ("preDeployCommand is not available on your
+   plan"). Folded `migrate --noinput` into `startCommand` instead, so
+   it runs before `gunicorn` starts on every deploy.
+3. Added `core/management/commands/ensure_superuser.py` - a small
+   idempotent command that reads `DJANGO_SUPERUSER_USERNAME/EMAIL/
+   PASSWORD` and no-ops if unset - and folded both it and `import_csv`
+   into `startCommand` alongside `migrate`. All three are safe to
+   re-run on every deploy: `ensure_superuser` creates-or-updates one
+   user idempotently, and `import_csv` already uses
+   `update_or_create()`.
+
+Final `startCommand`: `migrate --noinput && ensure_superuser &&
+import_csv && gunicorn ...`. `docs/Deployment.md` (Sections 2, 7, 8)
+updated accordingly. This is the sequence every subsequent deploy in
+this document actually ran through.
+
+---
+
+### Milestone 18 — Routine-4 Data, Postgres Compatibility Fix, Neon Migration & PDF Persistence
+
+**Part A - Routine-4 CSV import.** A new routine PDF (`Routine-4`,
+covering 6 Aug - 5 Oct 2026) was translated into the five-file CSV
+dataset format and imported via `import_csv`: 82 new rows in
+`routine.csv` (35 `CLASS` lectures across Physics/Chemistry/Higher
+Math/Biology/English/Bangla plus their `DAILY_EXAM` rows, 6
+`WEEKLY_EXAM` and 2 `MONTHLY_EXAM` markers), 55 new rows in
+`lecture_topics.csv`, and 11 new rows in `exams.csv`
+(`WE-14`-`WE-22`, `MRT-04`, `MRT-05`). Dataset versions `v3` and `v4`
+archived under `data/dataset_archive/` (see Part B for why two).
+
+**Part B - Postgres `varchar(255)` production-only bug.** The first
+deploy of Routine-4's data (`v3`) failed twice in production with
+`psycopg.errors.StringDataRightTruncation` on `LectureTopic.topic`
+(`max_length=255`) - two topic strings (297 and 300 chars) exceeded
+it. SQLite (local dev and CI's database) does not enforce `varchar`
+length at the column level and Django's `update_or_create()` doesn't
+call `full_clean()`, so this passed everywhere except real Postgres.
+Production was never actually down - Render's `startCommand` runs
+`migrate && ... && import_csv && gunicorn` in sequence, so the crash
+happened before `gunicorn` started and the previous release kept
+serving traffic through both failed attempts. Fixed by shortening the
+two strings (`v4`) and auditing every CSV field against its model's
+`max_length`; shipped and confirmed live via Render MCP logs
+("Import completed successfully.", 85 routine events / 146 lecture
+topics / 26 exams).
+
+**Part C - Render → Neon Postgres migration.** Render's free Postgres
+instance (`admission-helper-db`) carries a hard 30-day expiry
+(created 2026-07-26, `expiresAt` 2026-08-25) and is not renewable -
+this took priority over every other item in `plan_v1.md`, including
+its own Phase A (GitHub Actions scheduler), since the alternative was
+outright data loss. Migration performed with the Neon MCP server and
+Django's own `dumpdata`/`loaddata` (no `pg_dump`/`psql` available in
+this environment - both are pure-Python and go through the same
+`psycopg` driver the app already depends on):
+
+1. `dumpdata --natural-foreign --natural-primary -e contenttypes -e
+   auth.permission -e sessions` against Render's external connection
+   string - 430 records (2 users, 6 subjects, 75 chapters, 129
+   lectures, 146 lecture topics, 26 exams, 15 progress rows, 15
+   dataset versions/import logs). `reminders_notificationpreference`
+   and `reminders_reminderlog` confirmed genuinely empty via a direct
+   read-only query against Render (not a dump gap - no reminders had
+   been sent yet).
+2. Created a Neon project, ran `migrate` against it (clean schema,
+   nothing hand-written), then `loaddata` the same 430 records - row
+   counts verified to match exactly via SQL.
+3. `sqlsequencereset` for every app table, since `loaddata` preserves
+   explicit PKs but does not advance Postgres's identity sequences -
+   skipping this would have let the next `INSERT` collide with an
+   already-used ID.
+4. Render's `DATABASE_URL` repointed at Neon's pooled connection
+   string; redeploy confirmed via Render MCP logs: `migrate` found
+   nothing to apply (schema already matched), `ensure_superuser`
+   recognized and updated the existing superuser (not recreated), and
+   `import_csv` re-ran cleanly with matching counts. `/health/`
+   confirmed `{"status": "ok"}` post-cutover.
+
+The old Render Postgres instance is no longer referenced anywhere and
+was left to expire naturally on 2026-08-25 rather than deleted early
+- no rollback was needed, but there was no reason to remove the
+safety net before its already-scheduled disappearance.
+
+**Part D - Routine Archive PDF persistence.** `media/` was fully
+gitignored and Render Free attaches no persistent disk (`render.yaml`
+Milestone 17's own Known Issue), so a PDF copied into
+`media/routines/` at runtime - as Routine-4's was, in an earlier
+session - never survived the next deploy; the Routine Resources page
+had nothing to serve in production. Fixed the same way the CSV
+dataset archive already is: un-ignored `media/routines/*.pdf`
+specifically (the rest of `media/` stays ignored) and committed the
+current routine (`2026-08.pdf`). No new infrastructure - it now ships
+with every deploy automatically. `docs/Deployment.md`'s Known Issue
+about `MEDIA_ROOT` having no persistent disk is resolved for the
+Routine Archive specifically; a real user-uploaded-media feature (if
+ever built) would still need a real solution (paid disk or object
+storage).
+
+**Verification.** Both fixes shipped through the same branch → PR →
+CI → merge-to-`develop` → merge-to-`main` → auto-deploy discipline as
+every prior milestone (`bugfix/routine-4-topic-length` → PR #2;
+`bugfix/persist-routine-pdf-archive` → PR #3), both confirmed `live`
+via Render MCP, both diffs are pure data/config (no application code
+changed), so the existing 533/533 test suite is unaffected.
+
+---
+
 ## Pending Milestones
 
 - [x] ~~Subjects (dedicated subject list / chapter browsing pages — not
@@ -5812,45 +5938,58 @@ polish change touch templates/`ui_tags.py` only - no query impact.
   feature. `docs/GitWorkflow.md`'s branching discipline is followed
   manually/by convention instead. Revisit if the repository ever goes
   public or the account upgrades.
-- **Render Scheduled Jobs run on a fixed UTC schedule, not per-user
-  local time** (Milestone 17) - same root cause as the pre-existing
-  Milestone 15/15.1 Known Issue above (`EXAM_DAY_MORNING_TIME` and the
-  Daily Agenda's delivery-time gate read server/app-configured
-  `TIME_ZONE`, not each user's own `NotificationPreference.timezone`);
-  now more visible operationally, since the cron schedule itself
-  (documented in `docs/Deployment.md`, Section 6) was deliberately
-  derived around `Asia/Dhaka`'s fixed UTC+6 offset rather than solved
-  properly for a multi-timezone user base. Acceptable for this
-  project's current single/few-user, single-timezone scope.
-- **`render.yaml` does not attach a persistent disk for `MEDIA_ROOT`**
-  (Milestone 17, Phase 3) - deliberately left as a manual step (see
-  `docs/Deployment.md` Section 4), since Render Blueprints don't
-  support disk attachment declaratively at the time this was written;
-  without it, an uploaded Routine Archive PDF would be lost on the
-  next deploy. Must be added manually in the Render dashboard
-  (**Settings → Disks**) before relying on the Routine Archive feature
-  in production.
+- **No scheduler currently invokes the five `send_*` reminder
+  commands in production at all** (superseded by Milestone 17.1) -
+  Render's Free plan doesn't support `type: cron` Scheduled Jobs, so
+  the schedule this Known Issue originally described (a fixed UTC
+  cron, not per-user local time) was removed from `render.yaml`
+  entirely rather than left running incorrectly. The commands
+  themselves remain fully built, idempotent, and scheduler-agnostic;
+  this is now a "nothing is calling them yet" gap, not a "calling them
+  at the wrong time" one. This is `plan_v1.md` Phase A (GitHub Actions
+  scheduler) - see Next Milestone below. The underlying per-user-
+  timezone gap (`EXAM_DAY_MORNING_TIME` and the Daily Agenda's
+  delivery-time gate reading server/app `TIME_ZONE`, not each user's
+  own `NotificationPreference.timezone`) is unchanged from Milestone
+  15/15.1's original entry and will still apply once a scheduler
+  exists.
+- **`media/` has no persistent disk on Render Free** (Milestone 17,
+  Phase 3) - resolved *for the Routine Archive specifically* by
+  Milestone 18, Part D: `media/routines/*.pdf` is now git-tracked
+  (un-ignored, committed), so it survives every deploy without needing
+  a disk at all. This does not generalize - a future feature involving
+  real user-uploaded media (not curated, git-committed content) would
+  still need either a paid Render disk or object storage (S3/
+  Cloudinary/Neon Object Storage), since git-tracking isn't a fit for
+  user-generated content.
 
 ---
 
 ## Next Milestone
 
-Milestone 17's code-side work is complete (`render.yaml`, Procfile fix,
-logging, reminder-command observability, deployment docs); what
-remains is entirely the user's manual work in the Render dashboard -
-applying the Blueprint, entering the four `sync: false` environment
-variables, verifying the first deploy, confirming all five Scheduled
-Jobs, creating the production superuser, and running the Phase 9 smoke
-test - see the deployment report delivered alongside this milestone
-for the exact steps. Once live deployment is confirmed, remaining
-candidates from `07_Development_Roadmap.md` and this document's
-`Pending Milestones`/`Known Issues` sections: a focused table-polish
-pass (numeric alignment, per Milestone 13's Known Issues), per-user
-timezone-aware reminder scheduling (Milestone 15/15.1's Known Issues -
-now more directly relevant, since the deployed Scheduled Jobs run on a
-fixed UTC schedule rather than per-user local time), a full
-page-by-page dark-mode sweep beyond the shared-component coverage
-Milestone 15.1/15.2 delivered, resolving `auth_card.html`'s dead-code
-status (Milestone 15.2's Known Issues), and enabling GitHub branch
-protection on `main` once the repository either goes public or moves
-to GitHub Pro (Milestone 16's Known Issue).
+The application is live in production (Render, now on Neon Postgres
+per Milestone 18) with real users and real data - deployment itself is
+done, not pending. `plan_v1.md` is the master V1 roadmap from here;
+its own priority order, cross-checked against this document, is:
+
+1. **GitHub Actions scheduler (`plan_v1.md` Phase A)** - the highest-
+   priority remaining item, now more urgent than the plan originally
+   framed it: Milestone 17.1 removed Render's cron entirely (Free plan
+   doesn't support it), so the five `send_*` reminder commands
+   currently have **no scheduler at all** in production, not merely a
+   suboptimal one. GitHub Actions workflows (`workflow_dispatch` for
+   manual runs, `--dry-run` first, then real schedules) should invoke
+   the existing commands unchanged - no reminder-engine rewrite.
+2. **UI refinement (`plan_v1.md` Phase G)** - table-polish (numeric
+   alignment, Milestone 13's Known Issues), a full page-by-page dark-
+   mode sweep beyond shared-component coverage, resolving
+   `auth_card.html`'s dead-code status (Milestone 15.2's Known
+   Issues).
+3. **Production security audit, full reminder acceptance test, backup/
+   recovery documentation, final smoke test, monitoring** (`plan_v1.md`
+   Phases J-O) - none started yet; blocked in part on Phase A existing
+   first (K/L specifically need a real scheduler to test against).
+4. Smaller/ongoing: per-user timezone-aware reminder triggers
+   (Milestone 15/15.1's Known Issue, still open), GitHub branch
+   protection on `main` once the repo goes public or the account
+   upgrades to Pro (Milestone 16's Known Issue).
