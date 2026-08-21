@@ -89,15 +89,50 @@ Blueprint.
 
 ### 1. Database (PostgreSQL)
 
-Create a Postgres instance on the platform and copy its connection
-string into the `DATABASE_URL` environment variable. `DATABASES` (in
-`admission_helper/settings.py`) uses `dj_database_url.config()`: with
-`DATABASE_URL` set, Postgres is used; unset, the app falls back to the
+**Current production database (Milestone 18): Neon**, not Render's own
+Postgres. Render's free managed Postgres carries a hard 30-day expiry
+per instance and is not renewable - the original instance
+(`admission-helper-db`, created 2026-07-26) was set to be deleted
+2026-08-25, which forced a migration onto Neon's free tier (no expiry)
+ahead of everything else in `plan_v1.md`. `DATABASE_URL` points at
+Neon's pooled connection string; nothing else about the app changed -
+`DATABASES` (in `admission_helper/settings.py`) uses
+`dj_database_url.config()` and doesn't care which Postgres provider is
+behind the URL. With `DATABASE_URL` unset, the app falls back to the
 same local `db.sqlite3` file development always uses, plus a health
 check (`CONN_HEALTH_CHECKS`) so a stale persistent connection
 reconnects transparently instead of surfacing as a request-time error.
 Never run production on SQLite - it doesn't survive an ephemeral
-filesystem and can't handle more than one web process.
+filesystem, can't handle more than one web process, and (per Milestone
+18, Part B) doesn't even enforce the same column constraints Postgres
+does, which let a `varchar(255)` overflow slip past local testing and
+CI once already.
+
+To move production data to a new Postgres instance (Neon or
+otherwise) without `pg_dump`/`psql`: Django's own `dumpdata`/
+`loaddata` management commands work directly through `psycopg` (the
+same driver the app already depends on) against any reachable
+`DATABASE_URL` -
+
+```bash
+# 1. Point DATABASE_URL at the OLD database, dump everything:
+python manage.py dumpdata --natural-foreign --natural-primary \
+  -e contenttypes -e auth.permission -e sessions \
+  -o dump.json
+
+# 2. Point DATABASE_URL at the NEW database, build the schema, load:
+python manage.py migrate --noinput
+python manage.py loaddata dump.json
+
+# 3. loaddata preserves explicit PKs but does NOT advance Postgres's
+#    identity sequences - reset every sequence or the next INSERT can
+#    collide with an already-used ID:
+python manage.py sqlsequencereset <app_label> [<app_label> ...]
+#    (pipe the output into the new database via `manage.py dbshell`,
+#    or run each statement through the provider's SQL console/MCP)
+```
+
+Then update `DATABASE_URL` on the hosting platform and redeploy.
 
 ### 2. Environment Variables
 
@@ -147,15 +182,27 @@ CDN is required for this project's scale.
 
 ### 4. Media Persistence
 
-`media/routines/` (the Routine Archive - see the README) needs to
-survive redeploys. Attach a persistent disk on Render/Railway and
-point `MEDIA_ROOT` at it (already the default path;
-`admission_helper/settings.py` reads `MEDIA_ROOT = BASE_DIR / 'media'`
-- mount the persistent disk at that path). Without a persistent disk,
-an uploaded (copied-in) routine PDF disappears on the next deploy.
-`render.yaml` does not attach one automatically - add a disk to the
-web service manually in the Render dashboard if you plan to use the
-Routine Archive (**Settings → Disks** on the service).
+**Routine Archive PDFs (Milestone 18, Part D): solved via git, not a
+disk.** `media/routines/*.pdf` is specifically un-ignored in
+`.gitignore` (the rest of `media/` stays ignored) and the current
+routine PDF is committed directly to the repository - the same
+pattern already used for `data/dataset_archive/`. Since Render/Railway
+rebuild the filesystem from git on every deploy, this means a
+committed routine PDF ships with every deploy automatically, with no
+persistent disk needed. Adding a new routine PDF is now: drop
+`YYYY-MM.pdf` into `media/routines/`, `git add` it (it's no longer
+gitignored), commit, and push through the normal branch/PR flow -
+Section 8 below covers importing that routine's structured CSV data
+the same way.
+
+This only works because the Routine Archive's content is curated and
+git-committed, not user-uploaded at runtime. A future feature
+involving real user-uploaded media (profile pictures, attachments,
+anything a user submits through the app itself) would still need
+either a persistent disk (attach one manually in the Render dashboard,
+**Settings → Disks** - `render.yaml` does not do this automatically)
+or object storage (S3, Cloudinary, Neon Object Storage). Don't extend
+the git-tracking approach to anything users upload themselves.
 
 ### 5. Email (SMTP)
 
