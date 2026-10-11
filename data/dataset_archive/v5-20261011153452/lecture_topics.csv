@@ -157,25 +157,31 @@ BA-20,BA,Weekly Exam Syllabus,কপিলদাস মুমূর্ষুর 
 BA-21,BA,Weekly Exam Syllabus,রেইনকোট + উপসর্গ,1
 BA-22,BA,Weekly Exam Syllabus,ফেব্রুয়ারি ১৯৬৯ + ক্রিয়ার কাল ও ক্রিয়ার ভাব,1
 
-P-23,P,২য় পত্র অধ্যায়-০৮ ও ০৯,"আধুনিক পদার্থবিজ্ঞানের সূচনা: ডি-ব্রগলির বস্তু তরঙ্গ, কম্পটন প্রভাব, হাইজেনবার্গের অনিশ্চয়তা নীতি; পরমাণুর মডেল এবং নিউক্লিয়ার পদার্থবিজ্ঞান",1
-P-24,P,২য় পত্র অধ্যায়-১০ ও ১১,সেমিকন্ডাক্টর ও ইলেকট্রনিক্স; জ্যোতির্বিজ্ঞান,1
+P-23,P,২য় পত্র অধ্যায়-০৮,"আধুনিক পদার্থবিজ্ঞানের সূচনা: ডি-ব্রগলির বস্তু তরঙ্গ, কম্পটন প্রভাব, হাইজেনবার্গের অনিশ্চয়তা নীতি",1
+P-23,P,২য় পত্র অধ্যায়-০৯,"পরমাণুর মডেল এবং নিউক্লিয়ার পদার্থবিজ্ঞান",2
+P-24,P,২য় পত্র অধ্যায়-১০,সেমিকন্ডাক্টর ও ইলেকট্রনিক্স,1
+P-24,P,২য় পত্র অধ্যায়-১১,জ্যোতির্বিজ্ঞান,2
 
-M-24,M,২য় পত্র অধ্যায়-০৮ ও ০৯,"স্থিতিবিদ্যা [বলের ভ্রামক, সমান্তরাল বল]; সমতলে বস্তুকণার গতি [বেগের সামান্তরিকের সূত্র থেকে নিউটনের গতিসূত্র পর্যন্ত]",1
+M-24,M,২য় পত্র অধ্যায়-০৮,"স্থিতিবিদ্যা [বলের ভ্রামক, সমান্তরাল বল]",1
+M-24,M,২য় পত্র অধ্যায়-০৯,সমতলে বস্তুকণার গতি [বেগের সামান্তরিকের সূত্র থেকে নিউটনের গতিসূত্র পর্যন্ত],2
 M-25,M,২য় পত্র অধ্যায়-০৯,সমতলে বস্তুকণার গতি [বাকি অংশ],1
 
-E-03,E,Weekly Exam Syllabus,"Adjective & Its Classification, Degree of comparison, Adverb & Its Classification, Inversion, Affirmative & Negative Agreement, Synonym & Antonym (G-I), Appropriate preposition (G-I), Group Verb (G-I), Spelling (G-I), Idiom & Phrase (G-I), One-word substitution (Animal, Omni, Kill, Place, Govt.)",1
-E-04,E,Weekly Exam Syllabus,"Preposition & Its Classification, Uses of Some Prepositions, Conjunction, Linkers & Interjection, Same Word but Different Parts of Speech, Suffix & Prefix, Transformation of Parts of Speech, Identification of Parts of Speech, Synonym & Antonym (J-L), Appropriate preposition (J-L), Group Verb (J-L), Spelling (J-L), Idiom & Phrase (J-L), One-word substitution (Miscellaneous)",1
-E-05,E,Weekly Exam Syllabus,"Verb & Its Classification, Gerund, Participle & Verbal Noun, Conjugation of Verbs, Uses of Modal Auxiliaries, Synonym & Antonym (M-O), Appropriate preposition (M-O), Group Verb (M-O), Spelling (M-O), Idiom & Phrase (M-O), Translation (Vocabulary, Uses of Special Phrases and Idioms)",1
-E-06,E,Weekly Exam Syllabus,"Subject-verb Agreement, Tense & Its identification, Sequence of tense, Right Form of verb, Conditionals, Causative Verb, Subjunctive, Synonym & Antonym (P-R), Appropriate preposition (P-R), Group Verb (P-R), Spelling (P-R), Idiom & Phrase (P-R), Translation (Proverb)",1
-E-07,E,Weekly Exam Syllabus,"Phrase and Identification, Clause and Identification, Sentence Correction, Pinpoint Error, Sentence Completion, Synonym & Antonym (S-U), Appropriate preposition (S-U), Group Verb (S-U), Spelling (S-U), Idiom & Phrase (S-U), Foreign words",1
-E-08,E,Weekly Exam Syllabus,"Sentence & Its Classification, Transformation of Sentence, Narration, Voice, Commonly Misused Words, Literature, Analogy, Synonym & Antonym (V-Z), Appropriate preposition (V-Z), Group Verb (V-Z), Spelling (V-Z), Idiom & Phrase (V-Z)",1
+E-03,E,Weekly Exam Syllabus,"Adjective & Its Classification, Degree of comparison, Adverb & Its Classification, Inversion, Affirmative & Negative Agreement, Synonym & Antonym (G-I), Appropriate preposition (G-I), Group Verb (G-I), Spelling (G-I), Idiom & Phrase (G-I), One-word substitution (Animal, Omni, Kill, Place, Govt.)",2
+E-04,E,Weekly Exam Syllabus,"Preposition & Its Classification, Uses of Some Prepositions, Conjunction, Linkers & Interjection, Same Word but Different Parts of Speech, Suffix & Prefix, Transformation of Parts of Speech, Identification of Parts of Speech, Synonym & Antonym (J-L), Appropriate preposition (J-L), Group Verb (J-L), Spelling (J-L), Idiom & Phrase (J-L), One-word substitution (Miscellaneous)",2
+E-05,E,Weekly Exam Syllabus,"Verb & Its Classification, Gerund, Participle & Verbal Noun, Conjugation of Verbs, Uses of Modal Auxiliaries, Synonym & Antonym (M-O), Appropriate preposition (M-O), Group Verb (M-O), Spelling (M-O), Idiom & Phrase (M-O), Translation (Vocabulary, Uses of Special Phrases and Idioms)",2
+E-06,E,Weekly Exam Syllabus,"Subject-verb Agreement, Tense & Its identification, Sequence of tense, Right Form of verb, Conditionals, Causative Verb, Subjunctive, Synonym & Antonym (P-R), Appropriate preposition (P-R), Group Verb (P-R), Spelling (P-R), Idiom & Phrase (P-R), Translation (Proverb)",2
+E-07,E,Weekly Exam Syllabus,"Phrase and Identification, Clause and Identification, Sentence Correction, Pinpoint Error, Sentence Completion, Synonym & Antonym (S-U), Appropriate preposition (S-U), Group Verb (S-U), Spelling (S-U), Idiom & Phrase (S-U), Foreign words",2
+E-08,E,Weekly Exam Syllabus,"Sentence & Its Classification, Transformation of Sentence, Narration, Voice, Commonly Misused Words, Literature, Analogy, Synonym & Antonym (V-Z), Appropriate preposition (V-Z), Group Verb (V-Z), Spelling (V-Z), Idiom & Phrase (V-Z)",2
 
-BA-03,BA,Weekly Exam Syllabus,"১ম পত্র: গদ্য: অর্ধাঙ্গী, যৌবনের গান, কবিতা: সুচেতনা প্রতিদান; ২য় পত্র: ব্যাকরণ-সন্ধি, শব্দদ্বিত্ব, বাক্য প্রকরণ, বাংলা ভাষার ব্যাকরণিক শব্দশ্রেণি, উপসর্গ",1
-BA-04,BA,Weekly Exam Syllabus,"১ম পত্র: গদ্য: জীবন ও বৃক্ষ, গন্তব্য কাবুল, নেকলেস, কবিতা: তাহারেই পড়ে মনে, পদ্মা, আমি কিংবদন্তির কথা বলছি; ২য় পত্র: ক্রিয়ার কাল, ক্রিয়ার ভাব, ক্রিয়া-বিভক্তি, সমাস, পারিভাষিক শব্দ",1
-BA-05,BA,Weekly Exam Syllabus,"১ম পত্র: গদ্য: মাসি-পিসি, কপিলদাস মুর্মুর শেষ কাজ, রেইনকোট, কবিতা: ফেব্রুয়ারি ১৯৬৯, আঠার বছর বয়স, প্রত্যাবর্তনের লজ্জা; ২য় পত্র: ব্যাকরণ- ধ্বনির পরিবর্তন, সংখ্যাবাচক শব্দ, শব্দজোড়, বাংলা ভাষার অপপ্রয়োগ ও শুদ্ধ প্রয়োগ, সমার্থক শব্দ",1
-BA-06,BA,Weekly Exam Syllabus,"১ম পত্র: উপন্যাস: লালসালু, নাটক: সিরাজউদ্দৌলা; ২য় পত্র: ব্যাকরণ- শব্দের শ্রেণিবিভাগ, ধাতু, প্রকৃতি ও প্রত্যয়, বিপরীতার্থক শব্দ, কারক ও বিভক্তি",1
+BA-03,BA,Weekly Exam Syllabus,"১ম পত্র: গদ্য: অর্ধাঙ্গী, যৌবনের গান, কবিতা: সুচেতনা প্রতিদান; ২য় পত্র: ব্যাকরণ-সন্ধি, শব্দদ্বিত্ব, বাক্য প্রকরণ, বাংলা ভাষার ব্যাকরণিক শব্দশ্রেণি, উপসর্গ",2
+BA-04,BA,Weekly Exam Syllabus,"১ম পত্র: গদ্য: জীবন ও বৃক্ষ, গন্তব্য কাবুল, নেকলেস, কবিতা: তাহারেই পড়ে মনে, পদ্মা, আমি কিংবদন্তির কথা বলছি; ২য় পত্র: ক্রিয়ার কাল, ক্রিয়ার ভাব, ক্রিয়া-বিভক্তি, সমাস, পারিভাষিক শব্দ",2
+BA-05,BA,Weekly Exam Syllabus,"১ম পত্র: গদ্য: মাসি-পিসি, কপিলদাস মুর্মুর শেষ কাজ, রেইনকোট, কবিতা: ফেব্রুয়ারি ১৯৬৯, আঠার বছর বয়স, প্রত্যাবর্তনের লজ্জা; ২য় পত্র: ব্যাকরণ- ধ্বনির পরিবর্তন, সংখ্যাবাচক শব্দ, শব্দজোড়, বাংলা ভাষার অপপ্রয়োগ ও শুদ্ধ প্রয়োগ, সমার্থক শব্দ",2
+BA-06,BA,Weekly Exam Syllabus,"১ম পত্র: উপন্যাস: লালসালু, নাটক: সিরাজউদ্দৌলা; ২য় পত্র: ব্যাকরণ- শব্দের শ্রেণিবিভাগ, ধাতু, প্রকৃতি ও প্রত্যয়, বিপরীতার্থক শব্দ, কারক ও বিভক্তি",2
 
-ICT-01,ICT,অধ্যায়-০৩ ও ০১,সংখ্যা পদ্ধতি ও ডিজিটাল ডিভাইস; তথ্য ও যোগাযোগ প্রযুক্তি: বিশ্ব ও বাংলাদেশ প্রেক্ষিত,1
+ICT-01,ICT,অধ্যায়-০৩,সংখ্যা পদ্ধতি ও ডিজিটাল ডিভাইস,1
+ICT-01,ICT,অধ্যায়-০১,তথ্য ও যোগাযোগ প্রযুক্তি: বিশ্ব ও বাংলাদেশ প্রেক্ষিত,2
 ICT-02,ICT,অধ্যায়-০৪,ওয়েব ডিজাইন পরিচিতি এবং HTML,1
-ICT-03,ICT,অধ্যায়-০২ ও ০৫,কমিউনিকেশন সিস্টেমস ও নেটওয়ার্কিং; প্রোগ্রামিং ভাষা,1
-ICT-04,ICT,অধ্যায়-০২ ও ০৬,"কমিউনিকেশন সিস্টেমস ও নেটওয়ার্কিং (মোবাইল ফোন, টপোলজি, ক্লাউড); ডেটাবেজ ম্যানেজমেন্ট সিস্টেম",1
+ICT-03,ICT,অধ্যায়-০২,কমিউনিকেশন সিস্টেমস ও নেটওয়ার্কিং,1
+ICT-03,ICT,অধ্যায়-০৫,প্রোগ্রামিং ভাষা,2
+ICT-04,ICT,অধ্যায়-০২,"কমিউনিকেশন সিস্টেমস ও নেটওয়ার্কিং (মোবাইল ফোন, টপোলজি, ক্লাউড)",1
+ICT-04,ICT,অধ্যায়-০৬,ডেটাবেজ ম্যানেজমেন্ট সিস্টেম,2
