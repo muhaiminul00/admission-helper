@@ -23,4 +23,4 @@ Thumbs.db
 validation_report.md
 .claude/
 *.bak
-data\dataset_archive\v5-20261011153452
+!data\dataset_archive\v5-20261011153452
